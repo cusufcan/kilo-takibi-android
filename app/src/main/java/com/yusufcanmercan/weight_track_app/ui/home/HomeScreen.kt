@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +25,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import kotlin.math.abs
@@ -101,6 +102,7 @@ fun HomeContent(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List<Double>, goal: GoalProgress?, onNewGoal: () -> Unit) {
     Card(
@@ -128,6 +130,11 @@ private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List
             )
             if (goal != null) {
                 Spacer(Modifier.height(12.dp))
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
                 Text(
                     text = if (goal.reached) {
                         // Hedefin 0,1 kg'dan fazla ötesindeysek ne kadar aştığını da söyle.
@@ -141,6 +148,15 @@ private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List
                     },
                     style = MaterialTheme.typography.titleSmall,
                 )
+                    if (goal.reached) {
+                        // Küçük, dolgusuz bağlantı: karta ek yükseklik katmaz.
+                        Text(
+                            text = stringResource(R.string.home_goal_new) + " ›",
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.clickable(onClick = onNewGoal),
+                        )
+                    }
+                }
                 Spacer(Modifier.height(6.dp))
                 LinearProgressIndicator(
                     progress = { goal.progress },
@@ -148,12 +164,6 @@ private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List
                     color = MaterialTheme.colorScheme.onPrimary,
                     trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
                 )
-                if (goal.reached) {
-                    TextButton(
-                        onClick = onNewGoal,
-                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimary),
-                    ) { Text(stringResource(R.string.home_goal_new)) }
-                }
             }
             if (trend.size >= 2) {
                 Spacer(Modifier.height(12.dp))

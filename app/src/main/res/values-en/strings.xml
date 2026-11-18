@@ -36,5 +36,5 @@
     <string name="settings_goal_save">Save</string>
     <string name="home_goal_reached_below">You reached your goal! (%1$.1f kg below it)</string>
     <string name="home_goal_reached_above">You reached your goal! (%1$.1f kg above it)</string>
-    <string name="home_goal_new">Set a new goal</string>
+    <string name="home_goal_new">New goal</string>
 </resources>
