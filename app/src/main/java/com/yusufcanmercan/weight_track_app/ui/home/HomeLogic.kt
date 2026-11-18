@@ -9,7 +9,7 @@ private const val TREND_SIZE = 10
  * Kayıtlardan ana sayfa durumunu üretir. Android'e bağlı değil, yalnız hesap; düz birim testle doğrulanır.
  * Sıra repository'den gelene güvenmez, tarihe göre kendisi sıralar.
  */
-fun buildHomeState(weights: List<Weight>, goalKg: Double? = null): HomeUiState {
+fun buildHomeState(weights: List<Weight>, goalKg: Double? = null, heightCm: Double? = null): HomeUiState {
     val oldestFirst = weights.sortedBy { it.timeStamp }
     val latest = oldestFirst.lastOrNull()
     val items = oldestFirst.mapIndexed { index, weight ->
@@ -23,6 +23,8 @@ fun buildHomeState(weights: List<Weight>, goalKg: Double? = null): HomeUiState {
         latest = latest,
         weeklyChange = if (latest != null && weekAgo != null) latest.weight - weekAgo.weight else null,
         trend = oldestFirst.takeLast(TREND_SIZE).map { it.weight },
+        bmi = if (heightCm != null && latest != null) calculateBmi(latest.weight, heightCm) else null,
+        hasHeight = heightCm != null,
         goal = if (goalKg != null && latest != null) goalProgress(oldestFirst.first().weight, latest.weight, goalKg) else null,
     )
 }

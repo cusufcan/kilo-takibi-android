@@ -36,6 +36,17 @@
     <string name="settings_goal_hint">Save empty to remove the goal</string>
     <string name="settings_goal_invalid">Enter a number between 1 and 500</string>
     <string name="settings_goal_save">Save</string>
+    <string name="settings_height">Height</string>
+    <string name="settings_height_field">Height (cm)</string>
+    <string name="settings_height_hint">Used for BMI. Save empty to remove your height</string>
+    <string name="settings_height_invalid">Enter a number between 100 and 250</string>
+    <string name="home_bmi">BMI %1$.1f · %2$s</string>
+    <string name="home_bmi_no_height">Enter your height in settings to see BMI</string>
+    <string name="bmi_underweight">Underweight</string>
+    <string name="bmi_normal">Normal</string>
+    <string name="bmi_overweight">Overweight</string>
+    <string name="bmi_obese">Obese</string>
+    <string name="home_bmi_disclaimer">BMI is a general indicator, not a diagnosis</string>
     <string name="home_goal_reached_below">You reached your goal! (%1$.1f kg below it)</string>
     <string name="home_goal_reached_above">You reached your goal! (%1$.1f kg above it)</string>
     <string name="home_goal_new">New goal</string>

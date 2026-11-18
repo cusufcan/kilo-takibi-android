@@ -20,7 +20,9 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     /** Durum aşağı akar: Repository -> ViewModel -> ekran (ADR-0001). */
-    val uiState: StateFlow<HomeUiState> = combine(repository.observeAll(), settings.goalWeight, ::buildHomeState)
+    val uiState: StateFlow<HomeUiState> = combine(repository.observeAll(), settings.goalWeight, settings.heightCm) { weights, goal, height ->
+        buildHomeState(weights, goal, height)
+    }
         .stateIn(
             scope = viewModelScope,
             // Ekran görünmeyince 5 sn sonra dinlemeyi bırakır; ekran döndürmede yeniden yüklemez.

@@ -12,4 +12,9 @@ interface SettingsRepository {
     val goalWeight: Flow<Double?>
 
     suspend fun setGoalWeight(kg: Double?)
+
+    /** Boy (cm); `null` = girilmemiş. BMI için. */
+    val heightCm: Flow<Double?>
+
+    suspend fun setHeightCm(cm: Double?)
 }

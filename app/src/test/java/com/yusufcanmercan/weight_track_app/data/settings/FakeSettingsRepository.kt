@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** Testte gerçek DataStore yerine kullanılan elle yazılmış sahte. */
-class FakeSettingsRepository(initial: ThemeMode = ThemeMode.SYSTEM, initialGoal: Double? = null) : SettingsRepository {
+class FakeSettingsRepository(initial: ThemeMode = ThemeMode.SYSTEM, initialGoal: Double? = null, initialHeight: Double? = null) : SettingsRepository {
     private val state = MutableStateFlow(initial)
     override val themeMode: Flow<ThemeMode> = state
 
@@ -17,5 +17,12 @@ class FakeSettingsRepository(initial: ThemeMode = ThemeMode.SYSTEM, initialGoal:
 
     override suspend fun setGoalWeight(kg: Double?) {
         goal.value = kg
+    }
+
+    private val height = MutableStateFlow(initialHeight)
+    override val heightCm: Flow<Double?> = height
+
+    override suspend fun setHeightCm(cm: Double?) {
+        height.value = cm
     }
 }

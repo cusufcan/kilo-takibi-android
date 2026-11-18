@@ -52,6 +52,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -114,7 +115,7 @@ fun HomeContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         state.latest?.let { latest ->
-            item(key = "current") { CurrentWeightCard(latest, state.weeklyChange, state.trend, state.goal, onNewGoal) }
+            item(key = "current") { CurrentWeightCard(latest, state.weeklyChange, state.trend, state.goal, state.bmi, state.hasHeight, onNewGoal) }
         }
         items(state.items, key = { it.weight.id }) { item ->
             val id = item.weight.id
@@ -131,7 +132,7 @@ fun HomeContent(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List<Double>, goal: GoalProgress?, onNewGoal: () -> Unit) {
+private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List<Double>, goal: GoalProgress?, bmi: Bmi?, hasHeight: Boolean, onNewGoal: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
@@ -155,6 +156,30 @@ private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List
                 },
                 style = MaterialTheme.typography.bodyMedium,
             )
+            if (bmi != null) {
+                Text(
+                    text = stringResource(
+                        R.string.home_bmi,
+                        bmi.value,
+                        stringResource(
+                            when (bmi.category) {
+                                BmiCategory.UNDERWEIGHT -> R.string.bmi_underweight
+                                BmiCategory.NORMAL -> R.string.bmi_normal
+                                BmiCategory.OVERWEIGHT -> R.string.bmi_overweight
+                                BmiCategory.OBESE -> R.string.bmi_obese
+                            },
+                        ),
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = stringResource(R.string.home_bmi_disclaimer),
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.alpha(0.7f),
+                )
+            } else if (!hasHeight) {
+                Text(stringResource(R.string.home_bmi_no_height), style = MaterialTheme.typography.bodySmall)
+            }
             if (goal != null) {
                 Spacer(Modifier.height(12.dp))
                 FlowRow(

@@ -42,4 +42,15 @@
     <string name="home_goal_reached_below">Hedefe ulaştın! (hedefin %1$.1f kg altında)</string>
     <string name="home_goal_reached_above">Hedefe ulaştın! (hedefin %1$.1f kg üstünde)</string>
     <string name="home_goal_new">Yeni hedef</string>
+    <string name="settings_height">Boy</string>
+    <string name="settings_height_field">Boy (cm)</string>
+    <string name="settings_height_hint">BMI için. Boş bırakıp kaydedersen boy silinir</string>
+    <string name="settings_height_invalid">100 ile 250 arasında bir sayı gir</string>
+    <string name="home_bmi">BMI %1$.1f · %2$s</string>
+    <string name="home_bmi_no_height">BMI için boyunu ayarlardan gir</string>
+    <string name="bmi_underweight">Zayıf</string>
+    <string name="bmi_normal">Normal</string>
+    <string name="bmi_overweight">Fazla kilolu</string>
+    <string name="bmi_obese">Obez</string>
+    <string name="home_bmi_disclaimer">BMI genel bir göstergedir, teşhis değildir</string>
 </resources>

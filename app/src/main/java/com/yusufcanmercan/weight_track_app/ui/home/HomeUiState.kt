@@ -24,4 +24,8 @@ data class HomeUiState(
     val trend: List<Double> = emptyList(),
     /** Hedef konmadıysa veya kayıt yoksa `null`. */
     val goal: GoalProgress? = null,
+    /** Boy girilmediyse veya kayıt yoksa `null`. */
+    val bmi: Bmi? = null,
+    /** Boy girilmiş mi (kart, BMI yoksa ipucu göstersin diye). */
+    val hasHeight: Boolean = false,
 )

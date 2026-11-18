@@ -85,4 +85,29 @@ class SettingsViewModelTest {
 
         assertEquals(70.0, viewModel.uiState.value.goalKg)
     }
+
+    @Test
+    fun `gecerli boy kaydedilir bos metin siler`() = runTest {
+        val viewModel = vm()
+
+        assertTrue(viewModel.onHeightSave("172,5"))
+        runCurrent()
+        assertEquals(172.5, viewModel.uiState.value.heightCm)
+
+        assertTrue(viewModel.onHeightSave(" "))
+        runCurrent()
+        assertEquals(null, viewModel.uiState.value.heightCm)
+    }
+
+    @Test
+    fun `gecersiz boy kaydedilmez`() = runTest {
+        val viewModel = vm(FakeSettingsRepository(initialHeight = 170.0))
+
+        assertFalse(viewModel.onHeightSave("abc"))
+        assertFalse(viewModel.onHeightSave("99"))
+        assertFalse(viewModel.onHeightSave("251"))
+        runCurrent()
+
+        assertEquals(170.0, viewModel.uiState.value.heightCm)
+    }
 }

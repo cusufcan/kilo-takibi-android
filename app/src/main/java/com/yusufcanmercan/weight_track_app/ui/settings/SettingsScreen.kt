@@ -40,6 +40,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         language = language,
         onThemeChange = viewModel::onThemeChange,
         onGoalSave = viewModel::onGoalSave,
+        onHeightSave = viewModel::onHeightSave,
         onLanguageChange = {
             language = it
             AppLanguage.apply(it)
@@ -53,6 +54,7 @@ fun SettingsContent(
     language: AppLanguage,
     onThemeChange: (ThemeMode) -> Unit,
     onGoalSave: (String) -> Boolean,
+    onHeightSave: (String) -> Boolean,
     onLanguageChange: (AppLanguage) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -73,7 +75,22 @@ fun SettingsContent(
             }
         }
         Section(R.string.settings_goal) {
-            GoalField(goalKg = state.goalKg, onSave = onGoalSave)
+            NumberField(
+                value = state.goalKg,
+                labelRes = R.string.settings_goal_field,
+                hintRes = R.string.settings_goal_hint,
+                invalidRes = R.string.settings_goal_invalid,
+                onSave = onGoalSave,
+            )
+        }
+        Section(R.string.settings_height) {
+            NumberField(
+                value = state.heightCm,
+                labelRes = R.string.settings_height_field,
+                hintRes = R.string.settings_height_hint,
+                invalidRes = R.string.settings_height_invalid,
+                onSave = onHeightSave,
+            )
         }
         Section(R.string.settings_language) {
             AppLanguage.entries.forEach { lang ->
@@ -116,19 +133,17 @@ private fun Option(label: String, selected: Boolean, onClick: () -> Unit) {
     }
 }
 
-/** Hedef kilo girişi. Boş kaydetmek hedefi siler; geçersizse hata gösterir, kaydetmez. */
+/** Sayı girişi (hedef kilo, boy). Boş kaydetmek değeri siler; geçersizse hata gösterir, kaydetmez. */
 @Composable
-private fun GoalField(goalKg: Double?, onSave: (String) -> Boolean) {
+private fun NumberField(value: Double?, labelRes: Int, hintRes: Int, invalidRes: Int, onSave: (String) -> Boolean) {
     // Kayıtlı değer değişince (ör. ilk yükleme) metin ona eşitlenir.
-    var text by remember(goalKg) { mutableStateOf(goalKg?.let { "%.1f".format(Locale.US, it) }.orEmpty()) }
+    var text by remember(value) { mutableStateOf(value?.let { "%.1f".format(Locale.US, it) }.orEmpty()) }
     var error by remember { mutableStateOf(false) }
     OutlinedTextField(
         value = text,
         onValueChange = { text = it; error = false },
-        label = { Text(stringResource(R.string.settings_goal_field)) },
-        supportingText = {
-            Text(stringResource(if (error) R.string.settings_goal_invalid else R.string.settings_goal_hint))
-        },
+        label = { Text(stringResource(labelRes)) },
+        supportingText = { Text(stringResource(if (error) invalidRes else hintRes)) },
         isError = error,
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),

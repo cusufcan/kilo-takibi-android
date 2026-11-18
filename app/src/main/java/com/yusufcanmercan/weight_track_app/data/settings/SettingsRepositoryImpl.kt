@@ -29,8 +29,15 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { if (kg == null) it.remove(GOAL_KEY) else it[GOAL_KEY] = kg }
     }
 
+    override val heightCm: Flow<Double?> = dataStore.data.map { it[HEIGHT_KEY] }
+
+    override suspend fun setHeightCm(cm: Double?) {
+        dataStore.edit { if (cm == null) it.remove(HEIGHT_KEY) else it[HEIGHT_KEY] = cm }
+    }
+
     private companion object {
         val THEME_KEY = stringPreferencesKey("theme_mode")
         val GOAL_KEY = doublePreferencesKey("goal_weight")
+        val HEIGHT_KEY = doublePreferencesKey("height_cm")
     }
 }
