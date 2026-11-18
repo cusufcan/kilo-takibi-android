@@ -41,7 +41,7 @@ class HomeViewModelTest {
         val state = viewModel.uiState.value
 
         assertFalse(state.isLoading)
-        assertEquals(listOf(2L, 3L, 1L), state.items.map { it.id })
+        assertEquals(listOf(2L, 3L, 1L), state.items.map { it.weight.id })
     }
 
     @Test
@@ -51,7 +51,7 @@ class HomeViewModelTest {
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
 
-        viewModel.onDelete(viewModel.uiState.value.items.single())
+        viewModel.onDelete(viewModel.uiState.value.items.single().weight)
 
         assertTrue(viewModel.uiState.value.items.isEmpty())
         assertFalse(viewModel.uiState.value.isLoading)

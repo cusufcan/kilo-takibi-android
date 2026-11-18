@@ -19,7 +19,7 @@ class HomeViewModel @Inject constructor(
 
     /** Durum aşağı akar: Repository -> ViewModel -> ekran (ADR-0001). */
     val uiState: StateFlow<HomeUiState> = repository.observeAll()
-        .map { list -> HomeUiState(isLoading = false, items = list.asReversed()) }
+        .map(::buildHomeState)
         .stateIn(
             scope = viewModelScope,
             // Ekran görünmeyince 5 sn sonra dinlemeyi bırakır; ekran döndürmede yeniden yüklemez.

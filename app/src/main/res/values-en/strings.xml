@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="home_empty">No entries yet</string>
+    <string name="home_empty_title">Add your first entry</string>
+    <string name="home_empty_hint">Tap the + button to log your weight and watch your progress here.</string>
+    <string name="home_current">Current weight</string>
+    <string name="home_week_change">%1$+.1f kg vs last week</string>
+    <string name="home_week_no_data">Weekly change needs at least 7 days of entries</string>
+    <string name="change_kg">%1$+.1f kg</string>
     <string name="weight_kg">%.1f kg</string>
     <string name="delete">Delete</string>
     <string name="add_title">Add weight</string>
