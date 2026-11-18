@@ -97,6 +97,13 @@ fun AppNavHost() {
                 HomeScreen(
                     onAdd = { navController.navigate(EditWeight()) },
                     onEdit = { id -> navController.navigate(EditWeight(id)) },
+                    onNewGoal = {
+                        navController.navigate(Settings) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                 )
             }
             composable<Graph> { GraphScreen() }

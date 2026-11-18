@@ -37,4 +37,7 @@
     <string name="settings_goal_hint">Boş bırakıp kaydedersen hedef silinir</string>
     <string name="settings_goal_invalid">1 ile 500 arasında bir sayı gir</string>
     <string name="settings_goal_save">Kaydet</string>
+    <string name="home_goal_reached_below">Hedefe ulaştın! (hedefin %1$.1f kg altında)</string>
+    <string name="home_goal_reached_above">Hedefe ulaştın! (hedefin %1$.1f kg üstünde)</string>
+    <string name="home_goal_new">Yeni hedef koy</string>
 </resources>

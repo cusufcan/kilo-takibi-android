@@ -23,6 +23,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import kotlin.math.abs
@@ -56,11 +57,12 @@ import java.util.Date
 fun HomeScreen(
     onAdd: () -> Unit,
     onEdit: (Long) -> Unit,
+    onNewGoal: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Box(modifier = Modifier.fillMaxSize()) {
-        HomeContent(state = state, onEdit = onEdit, onDelete = viewModel::onDelete)
+        HomeContent(state = state, onEdit = onEdit, onDelete = viewModel::onDelete, onNewGoal = onNewGoal)
         FloatingActionButton(
             onClick = onAdd,
             modifier = Modifier
@@ -77,6 +79,7 @@ fun HomeContent(
     state: HomeUiState,
     onEdit: (Long) -> Unit,
     onDelete: (Weight) -> Unit,
+    onNewGoal: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (!state.isLoading && state.items.isEmpty()) {
@@ -90,7 +93,7 @@ fun HomeContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         state.latest?.let { latest ->
-            item(key = "current") { CurrentWeightCard(latest, state.weeklyChange, state.trend, state.goal) }
+            item(key = "current") { CurrentWeightCard(latest, state.weeklyChange, state.trend, state.goal, onNewGoal) }
         }
         items(state.items, key = { it.weight.id }) { item ->
             WeightCard(item = item, onClick = { onEdit(item.weight.id) }, onDelete = { onDelete(item.weight) })
@@ -99,7 +102,7 @@ fun HomeContent(
 }
 
 @Composable
-private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List<Double>, goal: GoalProgress?) {
+private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List<Double>, goal: GoalProgress?, onNewGoal: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
@@ -127,7 +130,12 @@ private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List
                 Spacer(Modifier.height(12.dp))
                 Text(
                     text = if (goal.reached) {
-                        stringResource(R.string.home_goal_reached)
+                        // Hedefin 0,1 kg'dan fazla ötesindeysek ne kadar aştığını da söyle.
+                        when {
+                            abs(goal.remaining) < 0.1 -> stringResource(R.string.home_goal_reached)
+                            goal.remaining < 0 -> stringResource(R.string.home_goal_reached_below, abs(goal.remaining))
+                            else -> stringResource(R.string.home_goal_reached_above, goal.remaining)
+                        }
                     } else {
                         stringResource(R.string.home_goal_remaining, abs(goal.remaining))
                     },
@@ -140,6 +148,12 @@ private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List
                     color = MaterialTheme.colorScheme.onPrimary,
                     trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
                 )
+                if (goal.reached) {
+                    TextButton(
+                        onClick = onNewGoal,
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimary),
+                    ) { Text(stringResource(R.string.home_goal_new)) }
+                }
             }
             if (trend.size >= 2) {
                 Spacer(Modifier.height(12.dp))

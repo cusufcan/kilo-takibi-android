@@ -34,4 +34,7 @@
     <string name="settings_goal_hint">Save empty to remove the goal</string>
     <string name="settings_goal_invalid">Enter a number between 1 and 500</string>
     <string name="settings_goal_save">Save</string>
+    <string name="home_goal_reached_below">You reached your goal! (%1$.1f kg below it)</string>
+    <string name="home_goal_reached_above">You reached your goal! (%1$.1f kg above it)</string>
+    <string name="home_goal_new">Set a new goal</string>
 </resources>
