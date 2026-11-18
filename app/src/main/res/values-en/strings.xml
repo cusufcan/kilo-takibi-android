@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_empty">No entries yet</string>
+    <string name="weight_kg">%.1f kg</string>
+    <string name="delete">Delete</string>
+    <string name="add_title">Add weight</string>
+    <string name="edit_title">Edit entry</string>
+    <string name="weight_label">Weight (kg)</string>
+    <string name="weight_error">Enter a valid weight (1–500)</string>
+    <string name="save">Save</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_graph">Graph</string>
+    <string name="nav_settings">Settings</string>
+    <string name="graph_empty">Add an entry to see the graph</string>
+    <string name="graph_change">Change: %1$+.1f kg</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="settings_language">Language</string>
+    <string name="language_system">System</string>
+</resources>

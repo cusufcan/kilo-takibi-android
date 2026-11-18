@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Kilo Takibi</string>
+    <string name="home_empty">Henüz kayıt yok</string>
+    <string name="weight_kg">%.1f kg</string>
+    <string name="delete">Sil</string>
+    <string name="add_title">Kilo ekle</string>
+    <string name="edit_title">Kaydı düzenle</string>
+    <string name="weight_label">Kilo (kg)</string>
+    <string name="weight_error">Geçerli bir kilo gir (1–500)</string>
+    <string name="save">Kaydet</string>
+    <string name="ok">Tamam</string>
+    <string name="cancel">Vazgeç</string>
+    <string name="nav_home">Ana sayfa</string>
+    <string name="nav_graph">Grafik</string>
+    <string name="nav_settings">Ayarlar</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Sistem</string>
+    <string name="theme_light">Açık</string>
+    <string name="theme_dark">Koyu</string>
+    <string name="settings_language">Dil</string>
+    <string name="language_system">Sistem</string>
+    <string name="language_tr" translatable="false">Türkçe</string>
+    <string name="language_en" translatable="false">English</string>
+    <string name="graph_empty">Grafik için kayıt ekle</string>
+    <string name="graph_change">Değişim: %1$+.1f kg</string>
+</resources>
