@@ -46,3 +46,13 @@ fun buildChartData(weights: List<Weight>): ChartData? {
         change = points.last().kg - points.first().kg,
     )
 }
+
+/**
+ * Dokunulan yatay konuma (0..1, grafiğin solu..sağı) en yakın noktanın sırasını verir.
+ * Yakınlık GÜN farkıyla ölçülür, çünkü X ekseni gerçek tarihtir. Tek günlük veride hep 0.
+ */
+fun nearestPointIndex(data: ChartData, fraction: Float): Int {
+    if (data.maxDay == 0L) return 0
+    val targetDay = fraction.coerceIn(0f, 1f) * data.maxDay
+    return data.points.indices.minBy { kotlin.math.abs(data.points[it].day - targetDay) }
+}

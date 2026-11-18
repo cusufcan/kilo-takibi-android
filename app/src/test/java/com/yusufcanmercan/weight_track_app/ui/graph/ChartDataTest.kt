@@ -55,3 +55,28 @@ class ChartDataTest {
         assertEquals(0.0, data.change, 0.0001)
     }
 }
+
+class NearestPointTest {
+    private val day = 24 * 60 * 60 * 1000L
+    private fun data(vararg days: Int) = buildChartData(days.map { Weight(it.toLong(), 80.0, it * day) })!!
+
+    @org.junit.Test
+    fun `dokunulan yere gun olarak en yakin nokta secilir`() {
+        val d = data(0, 2, 10)
+        org.junit.Assert.assertEquals(0, nearestPointIndex(d, 0.05f))
+        org.junit.Assert.assertEquals(1, nearestPointIndex(d, 0.3f))
+        org.junit.Assert.assertEquals(2, nearestPointIndex(d, 0.9f))
+    }
+
+    @org.junit.Test
+    fun `sinir disi konum kenara sabitlenir`() {
+        val d = data(0, 5)
+        org.junit.Assert.assertEquals(0, nearestPointIndex(d, -1f))
+        org.junit.Assert.assertEquals(1, nearestPointIndex(d, 2f))
+    }
+
+    @org.junit.Test
+    fun `tek kayitta sifir doner`() {
+        org.junit.Assert.assertEquals(0, nearestPointIndex(data(3), 0.7f))
+    }
+}
