@@ -1,6 +1,7 @@
 package com.yusufcanmercan.weight_track_app.ui.home
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,6 +34,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -88,6 +92,8 @@ fun HomeContent(
         EmptyState(modifier = modifier.fillMaxSize())
         return
     }
+    // Aynı anda yalnız bir kart açık; döndürmede korunur.
+    var expandedId by rememberSaveable { mutableStateOf<Long?>(null) }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         // Alt boşluk: son kart FAB'ın altında kalmasın.
@@ -98,7 +104,14 @@ fun HomeContent(
             item(key = "current") { CurrentWeightCard(latest, state.weeklyChange, state.trend, state.goal, onNewGoal) }
         }
         items(state.items, key = { it.weight.id }) { item ->
-            WeightCard(item = item, onClick = { onEdit(item.weight.id) }, onDelete = { onDelete(item.weight) })
+            val id = item.weight.id
+            WeightCard(
+                item = item,
+                expanded = expandedId == id,
+                onToggle = { expandedId = if (expandedId == id) null else id },
+                onEdit = { onEdit(id) },
+                onDelete = { onDelete(item.weight) },
+            )
         }
     }
 }
@@ -205,40 +218,63 @@ private fun MiniTrend(values: List<Double>, color: Color, modifier: Modifier = M
 }
 
 @Composable
-private fun WeightCard(item: HomeItem, onClick: () -> Unit, onDelete: () -> Unit) {
+private fun WeightCard(
+    item: HomeItem,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+) {
     Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        onClick = onToggle,
+        modifier = Modifier.fillMaxWidth().animateContentSize(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Row(
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.weight_kg, item.weight.weight),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                // Gün bazında gösterim: saat kısmı anlamsız (eski kodda rastgele).
-                Text(
-                    text = DateFormat.getDateInstance().format(Date(item.weight.timeStamp)),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.weight_kg, item.weight.weight),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    // Gün bazında gösterim: saat kısmı anlamsız (eski kodda rastgele).
+                    Text(
+                        text = DateFormat.getDateInstance().format(Date(item.weight.timeStamp)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    // Kapalıyken kısa önizleme; açılınca tam not aşağıda.
+                    if (!expanded) {
+                        item.weight.note?.let { note ->
+                            Text(
+                                text = note,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.outline,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                }
+                item.change?.let { ChangeBadge(it) }
+            }
+            if (expanded) {
                 item.weight.note?.let { note ->
                     Text(
                         text = note,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 8.dp),
                     )
                 }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
+                    TextButton(onClick = onEdit) { Text(stringResource(R.string.edit)) }
+                }
             }
-            item.change?.let { ChangeBadge(it) }
-            TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
         }
     }
 }

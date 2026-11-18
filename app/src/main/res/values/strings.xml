@@ -9,6 +9,7 @@
     <string name="change_kg">%1$+.1f kg</string>
     <string name="weight_kg">%.1f kg</string>
     <string name="delete">Sil</string>
+    <string name="edit">Düzenle</string>
     <string name="add_title">Kilo ekle</string>
     <string name="edit_title">Kaydı düzenle</string>
     <string name="note_label">Not (isteğe bağlı)</string>

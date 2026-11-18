@@ -21,6 +21,9 @@ import org.junit.runner.RunWith
  * Yeni sürüm gelince aynı kalıp: version'ı artır, Migration yaz, buraya test ekle.
  */
 @RunWith(AndroidJUnit4::class)
+// DİKKAT: bu test uygulamanın gerçek veri tabanı dosyasını (`weight_database`) kullanır ve
+// bittiğinde uygulama cihazdan kaldırılır; cihazdaki/emülatördeki tüm kayıtlar silinir.
+// Değerli verisi olan cihazda çalıştırma.
 class MigrationTest {
 
     @get:Rule

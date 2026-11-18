@@ -8,6 +8,7 @@
     <string name="change_kg">%1$+.1f kg</string>
     <string name="weight_kg">%.1f kg</string>
     <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
     <string name="add_title">Add weight</string>
     <string name="edit_title">Edit entry</string>
     <string name="note_label">Note (optional)</string>
