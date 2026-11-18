@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 108x108 adaptive ön plan; güvenli alan ortadaki 66x66. Açık kare + mor kadran + ibre. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#F3EDFF"
+        android:pathData="M42,28 H66 A14,14 0 0 1 80,42 V66 A14,14 0 0 1 66,80 H42 A14,14 0 0 1 28,66 V42 A14,14 0 0 1 42,28 Z" />
+    <path
+        android:fillColor="#6200EE"
+        android:pathData="M54,38 A16,16 0 1 1 54,70 A16,16 0 1 1 54,38 Z" />
+    <path
+        android:fillColor="#F3EDFF"
+        android:pathData="M54,54 m-3,0 a3,3 0 1 1 6,0 a3,3 0 1 1 -6,0 Z" />
+    <path
+        android:strokeColor="#F3EDFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M54,54 L62,45" />
+</vector>
