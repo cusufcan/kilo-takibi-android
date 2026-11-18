@@ -1,5 +1,20 @@
 package com.yusufcanmercan.weight_track_app.ui.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.Canvas
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -225,11 +240,20 @@ private fun WeightCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    // Açılırken renk ve köşe de yumuşakça değişir; ani sıçrama olmasın.
+    val container by animateColorAsState(
+        targetValue = if (expanded) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+        animationSpec = tween(300),
+        label = "cardColor",
+    )
+    val corner by animateDpAsState(if (expanded) 28.dp else 20.dp, tween(300), label = "cardCorner")
     Card(
         onClick = onToggle,
-        modifier = Modifier.fillMaxWidth().animateContentSize(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)),
+        shape = RoundedCornerShape(corner),
+        colors = CardDefaults.cardColors(containerColor = container),
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -244,35 +268,41 @@ private fun WeightCard(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    // Kapalıyken kısa önizleme; açılınca tam not aşağıda.
-                    if (!expanded) {
-                        item.weight.note?.let { note ->
-                            Text(
-                                text = note,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.outline,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
                 }
                 item.change?.let { ChangeBadge(it) }
             }
-            if (expanded) {
-                item.weight.note?.let { note ->
-                    Text(
-                        text = note,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(top = 8.dp),
-                    )
-                }
+            // Tek Text: kapalıyken 1 satır, açılınca tamamı. Yükseklik animateContentSize ile akar.
+            item.weight.note?.let { note ->
+                Text(
+                    text = note,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (expanded) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
+                    maxLines = if (expanded) Int.MAX_VALUE else 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+            }
+            AnimatedVisibility(
+                visible = expanded,
+                enter = fadeIn(tween(250, delayMillis = 80)) + expandVertically(tween(300)),
+                exit = fadeOut(tween(120)) + shrinkVertically(tween(250)),
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 ) {
-                    TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
-                    TextButton(onClick = onEdit) { Text(stringResource(R.string.edit)) }
+                    OutlinedButton(
+                        onClick = onDelete,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+                    ) { Text(stringResource(R.string.delete)) }
+                    FilledTonalButton(
+                        onClick = onEdit,
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                    ) { Text(stringResource(R.string.edit)) }
                 }
             }
         }
