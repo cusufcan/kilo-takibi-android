@@ -19,6 +19,8 @@ data class ChartData(
     val maxKg: Double,
     /** Son kayıt eksi ilk kayıt (kg); eksi = verilen kilo. */
     val change: Double,
+    /** Hedef kilo; grafikte kesikli yatay çizgi. Yoksa `null`. */
+    val goalKg: Double? = null,
 )
 
 const val DAY_MS = 86_400_000.0
@@ -28,14 +30,15 @@ private const val Y_PADDING_KG = 1.0
  * Kayıtları tarih eksenli grafik verisine çevirir; kayıt yoksa `null`.
  * X ekseni kayıt sırası değil GERÇEK tarihtir: 1. ve 10. gün arasındaki boşluk grafikte de boşluktur.
  */
-fun buildChartData(weights: List<Weight>): ChartData? {
+fun buildChartData(weights: List<Weight>, goalKg: Double? = null): ChartData? {
     if (weights.isEmpty()) return null
     val sorted = weights.sortedBy { it.timeStamp }
     val first = sorted.first().timeStamp
     // Yaz saati geçişinde bir gün 23/25 saat olur; bölüp yuvarlamak bunu tolere eder.
     val points = sorted.map { ChartPoint(((it.timeStamp - first) / DAY_MS).roundToLong(), it.weight) }
-    val minKg = points.minOf { it.kg }
-    val maxKg = points.maxOf { it.kg }
+    // Hedef çizgisi görünür kalsın diye eksen aralığı hedefi de kapsar.
+    val minKg = minOf(points.minOf { it.kg }, goalKg ?: Double.MAX_VALUE)
+    val maxKg = maxOf(points.maxOf { it.kg }, goalKg ?: -Double.MAX_VALUE)
     return ChartData(
         points = points,
         startMillis = first,
@@ -44,6 +47,7 @@ fun buildChartData(weights: List<Weight>): ChartData? {
         minKg = minKg - Y_PADDING_KG,
         maxKg = maxKg + Y_PADDING_KG,
         change = points.last().kg - points.first().kg,
+        goalKg = goalKg,
     )
 }
 

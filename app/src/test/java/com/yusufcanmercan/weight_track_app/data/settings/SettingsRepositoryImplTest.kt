@@ -43,4 +43,20 @@ class SettingsRepositoryImplTest {
 
         assertEquals(ThemeMode.SYSTEM, SettingsRepositoryImpl(store).themeMode.first())
     }
+
+    @Test
+    fun `hedef yoksa null olur`() = runTest {
+        assertEquals(null, SettingsRepositoryImpl(newStore(backgroundScope)).goalWeight.first())
+    }
+
+    @Test
+    fun `hedef yazilir ve null verilince silinir`() = runTest {
+        val repo = SettingsRepositoryImpl(newStore(backgroundScope))
+
+        repo.setGoalWeight(72.5)
+        assertEquals(72.5, repo.goalWeight.first())
+
+        repo.setGoalWeight(null)
+        assertEquals(null, repo.goalWeight.first())
+    }
 }

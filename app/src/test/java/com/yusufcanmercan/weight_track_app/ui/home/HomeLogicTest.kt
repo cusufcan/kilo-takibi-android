@@ -4,6 +4,7 @@ import com.yusufcanmercan.weight_track_app.data.local.Weight
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class HomeLogicTest {
@@ -60,5 +61,54 @@ class HomeLogicTest {
         assertEquals(10, state.trend.size)
         assertEquals(76.0, state.trend.first(), 1e-9)
         assertEquals(85.0, state.trend.last(), 1e-9)
+    }
+
+    @Test
+    fun `hedef yoksa goal null`() {
+        assertNull(buildHomeState(listOf(w(1, 80.0, 1))).goal)
+    }
+
+    @Test
+    fun `kilo verirken ilerleme baslangictan hedefe oranlanir`() {
+        // 80 -> 70 hedef, şu an 75: yolun yarısı.
+        val g = goalProgress(startKg = 80.0, currentKg = 75.0, goalKg = 70.0)
+
+        assertEquals(0.5f, g.progress, 1e-6f)
+        assertEquals(5.0, g.remaining, 1e-9)
+        assertFalse(g.reached)
+    }
+
+    @Test
+    fun `kilo alirken de ulasma ve ilerleme dogru`() {
+        val half = goalProgress(startKg = 60.0, currentKg = 65.0, goalKg = 70.0)
+        val done = goalProgress(startKg = 60.0, currentKg = 71.0, goalKg = 70.0)
+
+        assertEquals(0.5f, half.progress, 1e-6f)
+        assertFalse(half.reached)
+        assertEquals(1f, done.progress, 1e-6f)
+        assertTrue(done.reached)
+    }
+
+    @Test
+    fun `yanlis yone gidince ilerleme sifirda kalir`() {
+        val g = goalProgress(startKg = 80.0, currentKg = 83.0, goalKg = 70.0)
+
+        assertEquals(0f, g.progress, 1e-6f)
+        assertFalse(g.reached)
+    }
+
+    @Test
+    fun `baslangic hedefe esitse bolme hatasi olmaz`() {
+        assertTrue(goalProgress(70.0, 70.0, 70.0).reached)
+        val off = goalProgress(70.0, 72.0, 70.0)
+        assertFalse(off.reached)
+        assertEquals(0f, off.progress, 1e-6f)
+    }
+
+    @Test
+    fun `buildHomeState hedefi ilk kayda gore hesaplar`() {
+        val state = buildHomeState(listOf(w(1, 80.0, 1), w(2, 75.0, 2)), goalKg = 70.0)
+
+        assertEquals(0.5f, state.goal!!.progress, 1e-6f)
     }
 }

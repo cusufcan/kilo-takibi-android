@@ -54,6 +54,22 @@ class ChartDataTest {
         assertEquals(2.0, data.maxKg - data.minKg, 0.0001)
         assertEquals(0.0, data.change, 0.0001)
     }
+
+    @Test
+    fun `hedef eksen araligina dahil edilir`() {
+        val d = buildChartData(listOf(w(80.0, 0), w(78.0, 1)), goalKg = 70.0)!!
+
+        assertEquals(70.0, d.goalKg!!, 1e-9)
+        assertEquals(69.0, d.minKg, 1e-9)
+    }
+
+    @Test
+    fun `hedef yoksa aralik yalniz kayitlardan gelir`() {
+        val d = buildChartData(listOf(w(80.0, 0), w(78.0, 1)))!!
+
+        assertNull(d.goalKg)
+        assertEquals(77.0, d.minKg, 1e-9)
+    }
 }
 
 class NearestPointTest {

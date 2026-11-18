@@ -1,5 +1,6 @@
 package com.yusufcanmercan.weight_track_app.ui.graph
 
+import com.yusufcanmercan.weight_track_app.data.settings.FakeSettingsRepository
 import com.yusufcanmercan.weight_track_app.data.local.Weight
 import com.yusufcanmercan.weight_track_app.data.repository.FakeWeightRepository
 import com.yusufcanmercan.weight_track_app.ui.home.MainDispatcherRule
@@ -22,12 +23,12 @@ class GraphViewModelTest {
 
     @Test
     fun `baslangicta yukleniyor durumundadir`() {
-        assertTrue(GraphViewModel(FakeWeightRepository()).uiState.value.isLoading)
+        assertTrue(GraphViewModel(FakeWeightRepository(), FakeSettingsRepository()).uiState.value.isLoading)
     }
 
     @Test
     fun `kayit yoksa veri null olur`() = runTest {
-        val viewModel = GraphViewModel(FakeWeightRepository())
+        val viewModel = GraphViewModel(FakeWeightRepository(), FakeSettingsRepository())
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
 
@@ -43,7 +44,7 @@ class GraphViewModelTest {
                 Weight(id = 2, weight = 79.0, timeStamp = 86_400_000L),
             ),
         )
-        val viewModel = GraphViewModel(repo)
+        val viewModel = GraphViewModel(repo, FakeSettingsRepository())
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
 

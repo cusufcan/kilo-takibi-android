@@ -1,6 +1,7 @@
 package com.yusufcanmercan.weight_track_app.ui.home
 
 import com.yusufcanmercan.weight_track_app.data.local.Weight
+import com.yusufcanmercan.weight_track_app.data.settings.FakeSettingsRepository
 import com.yusufcanmercan.weight_track_app.data.repository.FakeWeightRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -20,7 +21,7 @@ class HomeViewModelTest {
 
     @Test
     fun `baslangicta yukleniyor durumundadir`() {
-        val viewModel = HomeViewModel(FakeWeightRepository())
+        val viewModel = HomeViewModel(FakeWeightRepository(), FakeSettingsRepository())
 
         assertTrue(viewModel.uiState.value.isLoading)
     }
@@ -34,7 +35,7 @@ class HomeViewModelTest {
                 Weight(id = 3, weight = 79.5, timeStamp = 2_000L),
             ),
         )
-        val viewModel = HomeViewModel(repo)
+        val viewModel = HomeViewModel(repo, FakeSettingsRepository())
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
 
@@ -47,7 +48,7 @@ class HomeViewModelTest {
     @Test
     fun `silinen kayit durumdan kalkar`() = runTest {
         val repo = FakeWeightRepository(listOf(Weight(id = 1, weight = 80.0, timeStamp = 1_000L)))
-        val viewModel = HomeViewModel(repo)
+        val viewModel = HomeViewModel(repo, FakeSettingsRepository())
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
 

@@ -9,7 +9,7 @@ private const val TREND_SIZE = 10
  * Kayıtlardan ana sayfa durumunu üretir. Android'e bağlı değil, yalnız hesap; düz birim testle doğrulanır.
  * Sıra repository'den gelene güvenmez, tarihe göre kendisi sıralar.
  */
-fun buildHomeState(weights: List<Weight>): HomeUiState {
+fun buildHomeState(weights: List<Weight>, goalKg: Double? = null): HomeUiState {
     val oldestFirst = weights.sortedBy { it.timeStamp }
     val latest = oldestFirst.lastOrNull()
     val items = oldestFirst.mapIndexed { index, weight ->
@@ -23,5 +23,24 @@ fun buildHomeState(weights: List<Weight>): HomeUiState {
         latest = latest,
         weeklyChange = if (latest != null && weekAgo != null) latest.weight - weekAgo.weight else null,
         trend = oldestFirst.takeLast(TREND_SIZE).map { it.weight },
+        goal = if (goalKg != null && latest != null) goalProgress(oldestFirst.first().weight, latest.weight, goalKg) else null,
     )
+}
+
+/**
+ * Başlangıç (ilk kayıt) → hedef yolunda şu an neredeyiz. Yön başlangıçtan çıkar:
+ * başlangıç hedeften büyükse kilo verme, küçükse alma. Başlangıç = hedef ise yalnız tam eşitlik "ulaştı" sayılır.
+ */
+fun goalProgress(startKg: Double, currentKg: Double, goalKg: Double): GoalProgress {
+    val reached = when {
+        startKg > goalKg -> currentKg <= goalKg
+        startKg < goalKg -> currentKg >= goalKg
+        else -> currentKg == goalKg
+    }
+    val progress = when {
+        reached -> 1f
+        startKg == goalKg -> 0f
+        else -> ((startKg - currentKg) / (startKg - goalKg)).toFloat().coerceIn(0f, 1f)
+    }
+    return GoalProgress(goalKg, remaining = currentKg - goalKg, progress = progress, reached = reached)
 }

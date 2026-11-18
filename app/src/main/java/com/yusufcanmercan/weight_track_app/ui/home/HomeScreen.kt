@@ -23,7 +23,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import kotlin.math.abs
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -88,7 +90,7 @@ fun HomeContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         state.latest?.let { latest ->
-            item(key = "current") { CurrentWeightCard(latest, state.weeklyChange, state.trend) }
+            item(key = "current") { CurrentWeightCard(latest, state.weeklyChange, state.trend, state.goal) }
         }
         items(state.items, key = { it.weight.id }) { item ->
             WeightCard(item = item, onClick = { onEdit(item.weight.id) }, onDelete = { onDelete(item.weight) })
@@ -97,7 +99,7 @@ fun HomeContent(
 }
 
 @Composable
-private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List<Double>) {
+private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List<Double>, goal: GoalProgress?) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
@@ -121,6 +123,24 @@ private fun CurrentWeightCard(latest: Weight, weeklyChange: Double?, trend: List
                 },
                 style = MaterialTheme.typography.bodyMedium,
             )
+            if (goal != null) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = if (goal.reached) {
+                        stringResource(R.string.home_goal_reached)
+                    } else {
+                        stringResource(R.string.home_goal_remaining, abs(goal.remaining))
+                    },
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                Spacer(Modifier.height(6.dp))
+                LinearProgressIndicator(
+                    progress = { goal.progress },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
+                )
+            }
             if (trend.size >= 2) {
                 Spacer(Modifier.height(12.dp))
                 MiniTrend(

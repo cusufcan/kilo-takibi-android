@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -91,6 +92,9 @@ private fun Chart(data: ChartData, modifier: Modifier = Modifier) {
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val bubbleColor = MaterialTheme.colorScheme.primaryContainer
     val bubbleTextStyle = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onPrimaryContainer)
+    val goalColor = MaterialTheme.colorScheme.secondary
+    val goalTextStyle = MaterialTheme.typography.labelSmall.copy(color = goalColor)
+    val goalLabel = data.goalKg?.let { stringResource(R.string.graph_goal_label, it) }.orEmpty()
     val measurer = rememberTextMeasurer()
     val dateFormat = remember { DateFormat.getDateInstance(DateFormat.SHORT) }
     // Dokunulan noktanın sırası; veri değişince sıfırlanır.
@@ -116,6 +120,18 @@ private fun Chart(data: ChartData, modifier: Modifier = Modifier) {
         repeat(GRID_LINES) { i ->
             val gy = size.height * i / (GRID_LINES - 1)
             drawLine(gridColor, Offset(0f, gy), Offset(size.width, gy), strokeWidth = 2f)
+        }
+
+        // Hedef: kesikli yatay çizgi + etiket (çizgi eksen aralığına dahil, bkz. buildChartData).
+        data.goalKg?.let { goal ->
+            val gy = y(goal)
+            drawLine(
+                goalColor, Offset(0f, gy), Offset(size.width, gy), strokeWidth = 3f,
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(18f, 12f)),
+            )
+            val label = measurer.measure(goalLabel, goalTextStyle)
+            val top = if (gy - label.size.height - 6f < 0f) gy + 6f else gy - label.size.height - 6f
+            drawText(label, topLeft = Offset(size.width - label.size.width - 8f, top))
         }
 
         val line = Path()

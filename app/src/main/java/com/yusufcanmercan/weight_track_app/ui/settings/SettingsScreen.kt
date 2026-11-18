@@ -6,7 +6,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.text.input.KeyboardType
+import java.util.Locale
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +39,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         state = state,
         language = language,
         onThemeChange = viewModel::onThemeChange,
+        onGoalSave = viewModel::onGoalSave,
         onLanguageChange = {
             language = it
             AppLanguage.apply(it)
@@ -46,6 +52,7 @@ fun SettingsContent(
     state: SettingsUiState,
     language: AppLanguage,
     onThemeChange: (ThemeMode) -> Unit,
+    onGoalSave: (String) -> Boolean,
     onLanguageChange: (AppLanguage) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -64,6 +71,9 @@ fun SettingsContent(
                     onClick = { onThemeChange(mode) },
                 )
             }
+        }
+        Section(R.string.settings_goal) {
+            GoalField(goalKg = state.goalKg, onSave = onGoalSave)
         }
         Section(R.string.settings_language) {
             AppLanguage.entries.forEach { lang ->
@@ -103,5 +113,28 @@ private fun Option(label: String, selected: Boolean, onClick: () -> Unit) {
     ) {
         RadioButton(selected = selected, onClick = null, modifier = Modifier.padding(end = 12.dp))
         Text(label)
+    }
+}
+
+/** Hedef kilo girişi. Boş kaydetmek hedefi siler; geçersizse hata gösterir, kaydetmez. */
+@Composable
+private fun GoalField(goalKg: Double?, onSave: (String) -> Boolean) {
+    // Kayıtlı değer değişince (ör. ilk yükleme) metin ona eşitlenir.
+    var text by remember(goalKg) { mutableStateOf(goalKg?.let { "%.1f".format(Locale.US, it) }.orEmpty()) }
+    var error by remember { mutableStateOf(false) }
+    OutlinedTextField(
+        value = text,
+        onValueChange = { text = it; error = false },
+        label = { Text(stringResource(R.string.settings_goal_field)) },
+        supportingText = {
+            Text(stringResource(if (error) R.string.settings_goal_invalid else R.string.settings_goal_hint))
+        },
+        isError = error,
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        modifier = Modifier.fillMaxWidth(),
+    )
+    Button(onClick = { error = !onSave(text) }, modifier = Modifier.padding(top = 8.dp)) {
+        Text(stringResource(R.string.settings_goal_save))
     }
 }

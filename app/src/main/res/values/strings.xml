@@ -29,4 +29,12 @@
     <string name="language_en" translatable="false">English</string>
     <string name="graph_empty">Grafik için kayıt ekle</string>
     <string name="graph_change">Değişim: %1$+.1f kg</string>
+    <string name="home_goal_remaining">Hedefe kalan: %1$.1f kg</string>
+    <string name="home_goal_reached">Hedefe ulaştın!</string>
+    <string name="graph_goal_label">Hedef %1$.1f kg</string>
+    <string name="settings_goal">Hedef kilo</string>
+    <string name="settings_goal_field">Hedef (kg)</string>
+    <string name="settings_goal_hint">Boş bırakıp kaydedersen hedef silinir</string>
+    <string name="settings_goal_invalid">1 ile 500 arasında bir sayı gir</string>
+    <string name="settings_goal_save">Kaydet</string>
 </resources>

@@ -7,4 +7,9 @@ interface SettingsRepository {
     val themeMode: Flow<ThemeMode>
 
     suspend fun setThemeMode(mode: ThemeMode)
+
+    /** Hedef kilo (kg); `null` = hedef yok. */
+    val goalWeight: Flow<Double?>
+
+    suspend fun setGoalWeight(kg: Double?)
 }
