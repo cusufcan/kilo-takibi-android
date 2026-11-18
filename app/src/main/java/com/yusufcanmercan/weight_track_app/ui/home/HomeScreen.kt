@@ -10,11 +10,9 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.Canvas
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -249,13 +247,16 @@ private fun WeightCard(
     val corner by animateDpAsState(if (expanded) 28.dp else 20.dp, tween(300), label = "cardCorner")
     Card(
         onClick = onToggle,
-        modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(corner),
         colors = CardDefaults.cardColors(containerColor = container),
     ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+        // animateContentSize kartın İÇİNDE: dışta olsaydı kartı dikdörtgen keser, köşeler keskinleşirdi.
+        Column(
+            modifier = Modifier
+                .animateContentSize(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -289,20 +290,13 @@ private fun WeightCard(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
                 ) {
-                    OutlinedButton(
+                    TextButton(
                         onClick = onDelete,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                     ) { Text(stringResource(R.string.delete)) }
-                    FilledTonalButton(
-                        onClick = onEdit,
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                        ),
-                    ) { Text(stringResource(R.string.edit)) }
+                    FilledTonalButton(onClick = onEdit) { Text(stringResource(R.string.edit)) }
                 }
             }
         }
