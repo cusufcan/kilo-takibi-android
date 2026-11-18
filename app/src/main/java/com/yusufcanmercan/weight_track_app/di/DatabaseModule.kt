@@ -19,7 +19,9 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): WeightDatabase =
-        Room.databaseBuilder(context, WeightDatabase::class.java, WeightDatabase.NAME).build()
+        Room.databaseBuilder(context, WeightDatabase::class.java, WeightDatabase.NAME)
+            .addMigrations(WeightDatabase.MIGRATION_1_2)
+            .build()
 
     @Provides
     fun provideWeightDao(database: WeightDatabase): WeightDao = database.weightDao()

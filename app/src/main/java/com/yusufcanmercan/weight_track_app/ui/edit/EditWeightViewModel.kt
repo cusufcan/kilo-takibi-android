@@ -40,7 +40,11 @@ class EditWeightViewModel @Inject constructor(
                 repository.observeById(editedId).first()?.let { weight ->
                     original = weight
                     _uiState.update {
-                        it.copy(weightText = weight.weight.toString(), dateMillis = startOfDay(weight.timeStamp))
+                        it.copy(
+                            weightText = weight.weight.toString(),
+                            noteText = weight.note.orEmpty(),
+                            dateMillis = startOfDay(weight.timeStamp),
+                        )
                     }
                 }
             }
@@ -49,6 +53,10 @@ class EditWeightViewModel @Inject constructor(
 
     fun onWeightChange(text: String) {
         _uiState.update { it.copy(weightText = text, weightError = false) }
+    }
+
+    fun onNoteChange(text: String) {
+        _uiState.update { it.copy(noteText = text.take(MAX_NOTE_LENGTH)) }
     }
 
     fun onDateChange(dateMillis: Long) {
@@ -63,12 +71,14 @@ class EditWeightViewModel @Inject constructor(
             _uiState.update { it.copy(weightError = true) }
             return
         }
+        // Boş/boşluk-only not kaydedilmez (null).
+        val note = state.noteText.trim().ifEmpty { null }
         viewModelScope.launch {
             val old = original
             if (old != null) {
-                repository.update(old.copy(weight = value, timeStamp = state.dateMillis))
+                repository.update(old.copy(weight = value, timeStamp = state.dateMillis, note = note))
             } else {
-                repository.add(Weight(weight = value, timeStamp = state.dateMillis))
+                repository.add(Weight(weight = value, timeStamp = state.dateMillis, note = note))
             }
             _uiState.update { it.copy(saved = true) }
         }
@@ -78,5 +88,6 @@ class EditWeightViewModel @Inject constructor(
         const val ID_KEY = "id"
         const val MIN_KG = 1.0
         const val MAX_KG = 500.0
+        const val MAX_NOTE_LENGTH = 200
     }
 }

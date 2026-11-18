@@ -10,6 +10,7 @@
     <string name="delete">Delete</string>
     <string name="add_title">Add weight</string>
     <string name="edit_title">Edit entry</string>
+    <string name="note_label">Note (optional)</string>
     <string name="weight_label">Weight (kg)</string>
     <string name="weight_error">Enter a valid weight (1–500)</string>
     <string name="save">Save</string>

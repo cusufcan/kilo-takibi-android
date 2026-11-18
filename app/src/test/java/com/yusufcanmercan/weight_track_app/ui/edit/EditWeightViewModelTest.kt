@@ -57,4 +57,39 @@ class EditWeightViewModelTest {
         assertEquals(7L, saved.id)
         assertEquals(79.5, saved.weight, 0.0)
     }
+
+    @Test
+    fun `not kirpilarak kaydedilir bos not null olur`() = runTest {
+        val repo = FakeWeightRepository()
+        val viewModel = EditWeightViewModel(repo, SavedStateHandle())
+        viewModel.onWeightChange("80")
+        viewModel.onNoteChange("  tatilden döndüm  ")
+        viewModel.onSave()
+        assertEquals("tatilden döndüm", repo.observeAll().first().single().note)
+
+        val repo2 = FakeWeightRepository()
+        val vm2 = EditWeightViewModel(repo2, SavedStateHandle())
+        vm2.onWeightChange("80")
+        vm2.onNoteChange("   ")
+        vm2.onSave()
+        assertEquals(null, repo2.observeAll().first().single().note)
+    }
+
+    @Test
+    fun `not uzunlugu sinirlanir`() = runTest {
+        val viewModel = EditWeightViewModel(FakeWeightRepository(), SavedStateHandle())
+        viewModel.onNoteChange("a".repeat(500))
+        assertEquals(EditWeightViewModel.MAX_NOTE_LENGTH, viewModel.uiState.value.noteText.length)
+    }
+
+    @Test
+    fun `duzenlemede mevcut not yuklenir ve guncellenir`() = runTest {
+        val repo = FakeWeightRepository(listOf(Weight(id = 7, weight = 80.0, timeStamp = 1_000L, note = "eski")))
+        val viewModel = EditWeightViewModel(repo, SavedStateHandle(mapOf(EditWeightViewModel.ID_KEY to 7L)))
+        assertEquals("eski", viewModel.uiState.value.noteText)
+
+        viewModel.onNoteChange("yeni")
+        viewModel.onSave()
+        assertEquals("yeni", repo.observeAll().first().single().note)
+    }
 }

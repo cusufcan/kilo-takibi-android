@@ -47,6 +47,7 @@ fun EditWeightScreen(
     EditWeightContent(
         state = state,
         onWeightChange = viewModel::onWeightChange,
+        onNoteChange = viewModel::onNoteChange,
         onDateChange = viewModel::onDateChange,
         onSave = viewModel::onSave,
     )
@@ -57,6 +58,7 @@ fun EditWeightScreen(
 fun EditWeightContent(
     state: EditUiState,
     onWeightChange: (String) -> Unit,
+    onNoteChange: (String) -> Unit,
     onDateChange: (Long) -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
@@ -90,6 +92,14 @@ fun EditWeightContent(
         OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
             Text(DateFormat.getDateInstance().format(Date(state.dateMillis)))
         }
+        OutlinedTextField(
+            value = state.noteText,
+            onValueChange = onNoteChange,
+            label = { Text(stringResource(R.string.note_label)) },
+            supportingText = { Text("${state.noteText.length}/${EditWeightViewModel.MAX_NOTE_LENGTH}") },
+            maxLines = 3,
+            modifier = Modifier.fillMaxWidth(),
+        )
         Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.save))
         }
