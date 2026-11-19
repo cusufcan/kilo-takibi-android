@@ -1,14 +1,17 @@
 package com.yusufcanmercan.weight_track_app.ui.home
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
@@ -35,10 +39,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -119,6 +125,7 @@ fun HomeContent(
         val filtered = filterByRange(state.items.map { it.weight }, range)
         if (filtered.isEmpty()) null else buildChartData(filtered, state.goal?.goalKg)
     }
+    val cardShape = MaterialTheme.shapes.large
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = Spacing.lg, end = Spacing.lg, top = Spacing.lg, bottom = FabClearance),
@@ -127,96 +134,161 @@ fun HomeContent(
             Text(stringResource(R.string.home_title), style = MaterialTheme.typography.headlineSmall)
         }
         state.latest?.let { latest ->
-            item(key = "summary") {
-                Summary(latest, state, onOpenSettings, Modifier.padding(top = Spacing.xl))
+            item(key = "hero") { HeroCard(latest, state.weeklyChange, Modifier.padding(top = Spacing.lg)) }
+            item(key = "stats") { StatTiles(state, onOpenSettings, Modifier.padding(top = Spacing.sm)) }
+        }
+        item(key = "chart") {
+            Card(Modifier.padding(top = Spacing.xl)) {
+                RangeSelector(range, onSelect = { range = it })
+                chart?.let { WeightChart(it, Modifier.padding(top = Spacing.md)) }
             }
-        }
-        item(key = "range") {
-            RangeSelector(range, onSelect = { range = it }, Modifier.padding(top = Spacing.xl, bottom = Spacing.md))
-        }
-        chart?.let { data ->
-            item(key = "chart") { WeightChart(data) }
         }
         state.months.forEach { month ->
             item(key = "month-${month.year}-${month.month}") {
-                MonthHeader(month, Modifier.padding(top = Spacing.xl, bottom = Spacing.xs))
+                MonthHeader(month, Modifier.padding(top = Spacing.xl, bottom = Spacing.sm))
             }
+            // Ayın satırları tek kart gibi görünsün: ilk satır üst, son satır alt köşeleri yuvarlar.
             itemsIndexed(month.items, key = { _, item -> item.weight.id }) { index, item ->
-                if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                WeightRow(item, onClick = { onEdit(item.weight.id) })
+                val zero = CornerSize(0.dp)
+                val shape = cardShape.copy(
+                    topStart = if (index == 0) cardShape.topStart else zero,
+                    topEnd = if (index == 0) cardShape.topEnd else zero,
+                    bottomStart = if (index == month.items.lastIndex) cardShape.bottomStart else zero,
+                    bottomEnd = if (index == month.items.lastIndex) cardShape.bottomEnd else zero,
+                )
+                Column(Modifier.clip(shape).background(MaterialTheme.colorScheme.surfaceContainer)) {
+                    if (index > 0) {
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                            modifier = Modifier.padding(horizontal = Spacing.lg),
+                        )
+                    }
+                    WeightRow(item, onClick = { onEdit(item.weight.id) })
+                }
             }
         }
     }
 }
 
-/** Büyük güncel kilo + haftalık rozet, altında BMI ve hedef tek düz satır (tasarim.md v2). */
+/** Yumuşak kart: nötr `surfaceContainer`, kenarlıksız, iç dolgu `lg` (tasarim.md v3). */
 @Composable
-private fun Summary(latest: Weight, state: HomeUiState, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.weight(1f, fill = false)) {
-                Text("%.1f".format(latest.weight), style = MaterialTheme.typography.displayLarge)
-                Text(
-                    text = "kg",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = Spacing.xs, bottom = Spacing.sm),
-                )
-            }
-            state.weeklyChange?.let {
-                Spacer(Modifier.width(Spacing.md))
-                ChangeBadge(it, R.string.home_week_change)
-            }
+private fun Card(
+    modifier: Modifier = Modifier,
+    shape: Shape = MaterialTheme.shapes.large,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Surface(shape = shape, color = MaterialTheme.colorScheme.surfaceContainer, modifier = modifier.fillMaxWidth()) {
+        Column(Modifier.padding(Spacing.lg), content = content)
+    }
+}
+
+/** Kahraman kart: "Son kilo", büyük sayı, haftalık rozet. */
+@Composable
+private fun HeroCard(latest: Weight, weeklyChange: Double?, modifier: Modifier = Modifier) {
+    Card(modifier) {
+        Text(
+            text = stringResource(R.string.home_latest),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text("%.1f".format(latest.weight), style = MaterialTheme.typography.displayLarge)
+            Text(
+                text = "kg",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = Spacing.xs, bottom = Spacing.sm),
+            )
         }
-        if (state.weeklyChange == null) {
+        if (weeklyChange != null) {
+            ChangeBadge(weeklyChange, R.string.home_week_change)
+        } else {
             Text(
                 text = stringResource(R.string.home_week_no_data),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        InfoLine(state, onOpenSettings, Modifier.padding(top = Spacing.sm))
     }
 }
 
-/** "BMI 24,1 · Normal · 5,0 kg kaldı". Eksik ayar varsa o parça ayarlara götüren bağlantıdır. */
+/** BMI · Hedef · Kalan. Eksik ayar varsa kart, ayarlara götüren mor bağlantı gösterir. */
 @Composable
-private fun InfoLine(state: HomeUiState, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
+private fun StatTiles(state: HomeUiState, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
     val bmi = state.bmi
     val goal = state.goal
-    val bmiText = when {
-        bmi != null -> "BMI %.1f · %s".format(bmi.value, stringResource(bmiCategoryText(bmi.category)))
-        !state.hasHeight -> null
-        else -> ""
-    }
-    val goalText = when {
-        goal == null -> null
-        !goal.reached -> stringResource(R.string.home_goal_remaining, abs(goal.remaining))
-        // Hedefin 0,1 kg'dan fazla ötesindeysek ne kadar aştığını da söyle.
-        abs(goal.remaining) < 0.1 -> stringResource(R.string.home_goal_reached)
-        goal.remaining < 0 -> stringResource(R.string.home_goal_reached) + " · " +
-            stringResource(R.string.home_goal_reached_below, abs(goal.remaining))
-        else -> stringResource(R.string.home_goal_reached) + " · " +
-            stringResource(R.string.home_goal_reached_above, goal.remaining)
-    }
     Column(modifier) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-            if (bmiText == null) LinkText(stringResource(R.string.home_bmi_no_height), onOpenSettings)
-            else if (bmiText.isNotEmpty()) InfoText(bmiText)
-            InfoText("·")
-            if (goalText == null) LinkText(stringResource(R.string.home_goal_none), onOpenSettings)
-            else InfoText(goalText)
+        // IntrinsicSize.Min: üç kart en uzun olanın boyunda eşitlenir.
+        Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            val tile = Modifier.weight(1f).fillMaxHeight()
+            StatTile(stringResource(R.string.stat_bmi), tile) {
+                when {
+                    bmi != null -> {
+                        StatValue("%.1f".format(bmi.value))
+                        StatNote(stringResource(bmiCategoryText(bmi.category)))
+                    }
+                    !state.hasHeight -> LinkText(stringResource(R.string.stat_bmi_link), onOpenSettings)
+                    else -> StatValue("–")
+                }
+            }
+            StatTile(stringResource(R.string.stat_goal), tile) {
+                if (goal != null) StatValue(stringResource(R.string.weight_kg, goal.goalKg))
+                else LinkText(stringResource(R.string.stat_goal_link), onOpenSettings)
+            }
+            StatTile(stringResource(R.string.stat_remaining), tile) {
+                when {
+                    goal == null -> StatValue("–")
+                    !goal.reached -> StatValue(stringResource(R.string.weight_kg, abs(goal.remaining)))
+                    else -> {
+                        StatValue(stringResource(R.string.home_goal_reached))
+                        // Hedefin 0,1 kg'dan fazla ötesindeysek ne kadar aştığını da söyle.
+                        when {
+                            abs(goal.remaining) < 0.1 -> Unit
+                            goal.remaining < 0 -> StatNote(stringResource(R.string.home_goal_reached_below, abs(goal.remaining)))
+                            else -> StatNote(stringResource(R.string.home_goal_reached_above, goal.remaining))
+                        }
+                    }
+                }
+            }
         }
         if (bmi != null) {
             Text(
                 text = stringResource(R.string.home_bmi_disclaimer),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = Spacing.xs),
+                modifier = Modifier.padding(top = Spacing.sm, start = Spacing.xs),
             )
         }
     }
 }
+
+@Composable
+private fun StatTile(label: String, modifier: Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Card(modifier, shape = MaterialTheme.shapes.medium) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = Spacing.xs),
+        )
+        content()
+    }
+}
+
+@Composable
+private fun StatValue(text: String) = Text(
+    text = text,
+    style = MaterialTheme.typography.titleLarge,
+    maxLines = 1,
+    overflow = TextOverflow.Ellipsis,
+)
+
+@Composable
+private fun StatNote(text: String) = Text(
+    text = text,
+    style = MaterialTheme.typography.labelSmall,
+    color = MaterialTheme.colorScheme.onSurfaceVariant,
+)
 
 private fun bmiCategoryText(category: BmiCategory) = when (category) {
     BmiCategory.UNDERWEIGHT -> R.string.bmi_underweight
@@ -226,18 +298,11 @@ private fun bmiCategoryText(category: BmiCategory) = when (category) {
 }
 
 @Composable
-private fun InfoText(text: String) = Text(
-    text = text,
-    style = MaterialTheme.typography.bodyMedium,
-    color = MaterialTheme.colorScheme.onSurfaceVariant,
-)
-
-@Composable
 private fun LinkText(text: String, onClick: () -> Unit) = Text(
     text = "$text ›",
-    style = MaterialTheme.typography.bodyMedium,
+    style = MaterialTheme.typography.titleSmall,
     color = MaterialTheme.colorScheme.primary,
-    modifier = Modifier.clickable(onClick = onClick),
+    modifier = Modifier.clickable(onClick = onClick).padding(vertical = Spacing.xs),
 )
 
 /** 7G / 30G / 90G / Tümü. Seçili olan dolu mor hap, diğerleri düz yazı. */
@@ -285,14 +350,14 @@ private fun MonthHeader(month: MonthGroup, modifier: Modifier = Modifier) {
     )
 }
 
-/** Kartsız satır: dokununca düzenleme açılır (silme de orada). */
+/** Ay kartının içindeki satır: dokununca düzenleme açılır (silme de orada). */
 @Composable
 private fun WeightRow(item: HomeItem, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = Spacing.md),
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {

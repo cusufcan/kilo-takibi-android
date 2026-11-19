@@ -22,7 +22,6 @@
     <string name="theme_dark">Dark</string>
     <string name="settings_language">Language</string>
     <string name="language_system">System</string>
-    <string name="home_goal_remaining">%1$.1f kg to go</string>
     <string name="home_goal_reached">Reached!</string>
     <string name="graph_goal_label">Goal %1$.1f kg</string>
     <string name="settings_goal">Goal weight</string>
@@ -34,16 +33,14 @@
     <string name="settings_height_field">Height (cm)</string>
     <string name="settings_height_hint">Used for BMI. Save empty to remove your height</string>
     <string name="settings_height_invalid">Enter a number between 100 and 250</string>
-    <string name="home_bmi_no_height">Add your height in settings</string>
     <string name="bmi_underweight">Underweight</string>
     <string name="bmi_normal">Normal</string>
     <string name="bmi_overweight">Overweight</string>
     <string name="bmi_obese">Obese</string>
     <string name="home_bmi_disclaimer">BMI is a general indicator, not a diagnosis</string>
-    <string name="home_goal_reached_below">%1$.1f kg below goal</string>
-    <string name="home_goal_reached_above">%1$.1f kg above goal</string>
+    <string name="home_goal_reached_below">%1$.1f kg below</string>
+    <string name="home_goal_reached_above">%1$.1f kg above</string>
     <string name="home_title">Weight tracker</string>
-    <string name="home_goal_none">Set a goal</string>
     <string name="range_week">7D</string>
     <string name="range_month">30D</string>
     <string name="range_quarter">90D</string>
@@ -52,4 +49,10 @@
     <string name="note_add">Note</string>
     <string name="step_down">Decrease</string>
     <string name="step_up">Increase</string>
+    <string name="home_latest">Latest</string>
+    <string name="stat_bmi">BMI</string>
+    <string name="stat_goal">Goal</string>
+    <string name="stat_remaining">Left</string>
+    <string name="stat_bmi_link">Add height</string>
+    <string name="stat_goal_link">Set</string>
 </resources>
