@@ -170,33 +170,35 @@ fun HomeContent(
     }
 }
 
-/** Yumuşak kart: nötr `surfaceContainer`, kenarlıksız, iç dolgu `lg` (tasarim.md v3). */
+/**
+ * Yumuşak kart: kenarlıksız, iç dolgu `lg` (tasarim.md v3). Zemin `surfaceContainer`; kahraman kart
+ * `primaryContainer` verir (ADR-0017). İçerik rengi Surface'ten gelir (zemine uygun "on" rengi).
+ */
 @Composable
 private fun Card(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.large,
+    color: Color = MaterialTheme.colorScheme.surfaceContainer,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Surface(shape = shape, color = MaterialTheme.colorScheme.surfaceContainer, modifier = modifier.fillMaxWidth()) {
+    Surface(shape = shape, color = color, modifier = modifier.fillMaxWidth()) {
         Column(Modifier.padding(Spacing.lg), content = content)
     }
 }
 
-/** Kahraman kart: "Son kilo", büyük sayı, haftalık rozet. */
+/** Kahraman kart: açık mor zeminde "Son kilo", büyük sayı, haftalık rozet. */
 @Composable
 private fun HeroCard(latest: Weight, weeklyChange: Double?, modifier: Modifier = Modifier) {
-    Card(modifier) {
+    Card(modifier, color = MaterialTheme.colorScheme.primaryContainer) {
         Text(
             text = stringResource(R.string.home_latest),
             style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Row(verticalAlignment = Alignment.Bottom) {
             Text("%.1f".format(latest.weight), style = MaterialTheme.typography.displayLarge)
             Text(
                 text = "kg",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = Spacing.xs, bottom = Spacing.sm),
             )
         }
@@ -206,7 +208,6 @@ private fun HeroCard(latest: Weight, weeklyChange: Double?, modifier: Modifier =
             Text(
                 text = stringResource(R.string.home_week_no_data),
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
