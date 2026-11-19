@@ -24,6 +24,7 @@ val LightColors = lightColorScheme(
     surface = Color(0xFFFBF8FF),
     onSurface = Color(0xFF1D1B20),
     surfaceVariant = Color(0xFFEDE6F5),
+    surfaceContainer = Color(0xFFF3EFF8),
     onSurfaceVariant = Color(0xFF4A4458),
     outline = Color(0xFF7B7487),
     outlineVariant = Color(0xFFE6DFF3),
@@ -43,6 +44,7 @@ val DarkColors = darkColorScheme(
     surface = Color(0xFF141218),
     onSurface = Color(0xFFE6E0E9),
     surfaceVariant = Color(0xFF49454F),
+    surfaceContainer = Color(0xFF211F26),
     onSurfaceVariant = Color(0xFFCAC4D0),
     outline = Color(0xFF948F99),
     outlineVariant = Color(0xFF49454F),
@@ -53,16 +55,22 @@ val DarkColors = darkColorScheme(
 data class ChangeColors(
     val decreaseContainer: Color,
     val onDecreaseContainer: Color,
+    val increaseContainer: Color,
+    val onIncreaseContainer: Color,
 )
 
 val LightChangeColors = ChangeColors(
     decreaseContainer = Color(0xFFE8F5E9),
     onDecreaseContainer = Color(0xFF1B5E20),
+    increaseContainer = Color(0xFFFDECEA),
+    onIncreaseContainer = Color(0xFFB3261E),
 )
 
 val DarkChangeColors = ChangeColors(
     decreaseContainer = Color(0xFF1B3A1F),
     onDecreaseContainer = Color(0xFFA5D6A7),
+    increaseContainer = Color(0xFF4A1F1C),
+    onIncreaseContainer = Color(0xFFF2B8B5),
 )
 
 val LocalChangeColors = staticCompositionLocalOf { LightChangeColors }

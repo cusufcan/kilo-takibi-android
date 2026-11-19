@@ -35,6 +35,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
+import com.yusufcanmercan.weight_track_app.ui.theme.Spacing
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yusufcanmercan.weight_track_app.R
@@ -50,39 +52,55 @@ fun GraphScreen(viewModel: GraphViewModel = hiltViewModel()) {
 @Composable
 fun GraphContent(state: GraphUiState, modifier: Modifier = Modifier) {
     val data = state.data
-    when {
-        state.isLoading -> Unit
-        data == null -> Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.graph_empty))
-        }
-        else -> Column(modifier.fillMaxSize().padding(16.dp)) {
-            Text(
-                text = stringResource(R.string.graph_change, data.change),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Row(Modifier.fillMaxWidth().padding(top = 16.dp)) {
-                // Sol: Y ekseni etiketleri (üstte en yüksek, altta en düşük kilo).
-                Column(
-                    modifier = Modifier.height(CHART_HEIGHT),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text("%.0f".format(data.maxKg), style = MaterialTheme.typography.labelSmall)
-                    Text("%.0f".format(data.minKg), style = MaterialTheme.typography.labelSmall)
-                }
-                Chart(data, Modifier.weight(1f).height(CHART_HEIGHT).padding(start = 8.dp))
-            }
-            // Alt: X ekseni etiketleri (ilk ve son kayıt tarihi).
-            Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                val format = DateFormat.getDateInstance(DateFormat.SHORT)
-                Text(format.format(Date(data.startMillis)), style = MaterialTheme.typography.labelSmall)
+    Column(modifier.fillMaxSize().padding(Spacing.lg)) {
+        Text(stringResource(R.string.nav_graph), style = MaterialTheme.typography.headlineSmall)
+        when {
+            state.isLoading -> Unit
+            data == null -> Box(Modifier.fillMaxSize().padding(Spacing.xxl), contentAlignment = Alignment.Center) {
                 Text(
-                    format.format(Date(data.startMillis + (data.maxDay * DAY_MS).toLong())),
-                    style = MaterialTheme.typography.labelSmall,
+                    text = stringResource(R.string.graph_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
                 )
+            }
+            else -> {
+                Text(
+                    text = stringResource(R.string.graph_change, data.change),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = Spacing.xl),
+                )
+                Row(Modifier.fillMaxWidth().padding(top = Spacing.lg)) {
+                    // Sol: Y ekseni etiketleri (üstte en yüksek, altta en düşük kilo).
+                    Column(
+                        modifier = Modifier.height(CHART_HEIGHT),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        AxisLabel("%.0f".format(data.maxKg))
+                        AxisLabel("%.0f".format(data.minKg))
+                    }
+                    Chart(data, Modifier.weight(1f).height(CHART_HEIGHT).padding(start = Spacing.sm))
+                }
+                // Alt: X ekseni etiketleri (ilk ve son kayıt tarihi).
+                Row(
+                    Modifier.fillMaxWidth().padding(top = Spacing.xs),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    val format = DateFormat.getDateInstance(DateFormat.SHORT)
+                    AxisLabel(format.format(Date(data.startMillis)))
+                    AxisLabel(format.format(Date(data.startMillis + (data.maxDay * DAY_MS).toLong())))
+                }
             }
         }
     }
 }
+
+@Composable
+private fun AxisLabel(text: String) = Text(
+    text = text,
+    style = MaterialTheme.typography.labelSmall,
+    color = MaterialTheme.colorScheme.onSurfaceVariant,
+)
 
 private val CHART_HEIGHT = 240.dp
 

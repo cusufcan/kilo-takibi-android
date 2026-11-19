@@ -97,7 +97,7 @@ fun AppNavHost() {
                 HomeScreen(
                     onAdd = { navController.navigate(EditWeight()) },
                     onEdit = { id -> navController.navigate(EditWeight(id)) },
-                    onNewGoal = {
+                    onOpenSettings = {
                         navController.navigate(Settings) {
                             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                             launchSingleTop = true
@@ -109,7 +109,10 @@ fun AppNavHost() {
             composable<Graph> { GraphScreen() }
             composable<Settings> { SettingsScreen() }
             composable<EditWeight> {
-                EditWeightScreen(onSaved = { navController.popBackStack() })
+                EditWeightScreen(
+                    onSaved = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() },
+                )
             }
         }
     }
