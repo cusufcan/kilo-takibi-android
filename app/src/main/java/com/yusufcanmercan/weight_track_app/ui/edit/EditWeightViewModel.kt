@@ -1,12 +1,12 @@
 package com.yusufcanmercan.weight_track_app.ui.edit
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yusufcanmercan.weight_track_app.data.local.Weight
 import com.yusufcanmercan.weight_track_app.data.repository.WeightRepository
 import com.yusufcanmercan.weight_track_app.util.startOfDay
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,30 +14,43 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.roundToLong
 
 /**
- * `id` rotadan SavedStateHandle ile gelir (ADR-0004: yalnız id taşınır). id yoksa yeni kayıt,
- * varsa o kaydı düzenler; kayıt Room'dan okunur (tek doğruluk kaynağı).
+ * Ekle/düzenle alt sayfasının ViewModel'i. Alt sayfa bir rota olmadığı için `id` rotadan gelmez;
+ * sayfa her açıldığında `start(id)` çağrılır (ADR-0015). `id` null ise yeni kayıt (son kiloyla dolu),
+ * değilse o kayıt Room'dan okunur (tek doğruluk kaynağı).
  */
 @HiltViewModel
 class EditWeightViewModel @Inject constructor(
     private val repository: WeightRepository,
-    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val editedId: Long? = savedStateHandle[ID_KEY]
-
-    private val _uiState = MutableStateFlow(
-        EditUiState(dateMillis = startOfDay(System.currentTimeMillis()), isEditing = editedId != null),
-    )
+    private val _uiState = MutableStateFlow(EditUiState())
     val uiState: StateFlow<EditUiState> = _uiState.asStateFlow()
 
     private var original: Weight? = null
+    private var loadJob: Job? = null
 
-    init {
-        if (editedId != null) {
-            viewModelScope.launch {
-                repository.observeById(editedId).first()?.let { weight ->
+    /**
+     * Bu ViewModel bir kez kuruldu mu? Döndürmede ViewModel yaşar (true kalır, yazılan silinmez);
+     * süreç öldürülüp geri gelince yenisi false başlar, ekran `start`'ı yeniden çağırır.
+     */
+    var isStarted = false
+        private set
+
+    /** Sayfayı sıfırdan kurar; önceki açılıştan kalan durum ve yarım yükleme silinir. */
+    fun start(id: Long?) {
+        isStarted = true
+        loadJob?.cancel()
+        original = null
+        _uiState.value = EditUiState(
+            dateMillis = startOfDay(System.currentTimeMillis()),
+            isEditing = id != null,
+        )
+        loadJob = viewModelScope.launch {
+            if (id != null) {
+                repository.observeById(id).first()?.let { weight ->
                     original = weight
                     _uiState.update {
                         it.copy(
@@ -47,12 +60,24 @@ class EditWeightViewModel @Inject constructor(
                         )
                     }
                 }
+            } else {
+                // Yeni kayıt son kiloyla başlar: çoğu gün yalnız birkaç kez −/+ yeter.
+                repository.observeAll().first().maxByOrNull { it.timeStamp }?.let { last ->
+                    _uiState.update { it.copy(weightText = last.weight.toString()) }
+                }
             }
         }
     }
 
     fun onWeightChange(text: String) {
         _uiState.update { it.copy(weightText = text, weightError = false) }
+    }
+
+    /** −/+ düğmeleri: `delta` kadar oynatır, 0,1'e yuvarlar, 1–500 dışına taşmaz. Boş alanda işlemez. */
+    fun onStep(delta: Double) {
+        val current = parseKg(_uiState.value.weightText) ?: return
+        val next = ((current + delta) * 10).roundToLong() / 10.0
+        onWeightChange(next.coerceIn(MIN_KG, MAX_KG).toString())
     }
 
     fun onNoteChange(text: String) {
@@ -65,8 +90,7 @@ class EditWeightViewModel @Inject constructor(
 
     fun onSave() {
         val state = _uiState.value
-        // Virgüllü giriş ("80,5") da kabul.
-        val value = state.weightText.replace(',', '.').toDoubleOrNull()
+        val value = parseKg(state.weightText)
         if (value == null || value !in MIN_KG..MAX_KG) {
             _uiState.update { it.copy(weightError = true) }
             return
@@ -84,7 +108,7 @@ class EditWeightViewModel @Inject constructor(
         }
     }
 
-    /** Düzenlenen kaydı siler ve ekranı kapatır (silme ana sayfadan buraya taşındı, tasarim.md v2). */
+    /** Düzenlenen kaydı siler ve sayfayı kapatır. */
     fun onDelete() {
         val old = original ?: return
         viewModelScope.launch {
@@ -93,10 +117,13 @@ class EditWeightViewModel @Inject constructor(
         }
     }
 
+    /** Virgüllü giriş ("80,5") de kabul. */
+    private fun parseKg(text: String): Double? = text.replace(',', '.').toDoubleOrNull()
+
     companion object {
-        const val ID_KEY = "id"
         const val MIN_KG = 1.0
         const val MAX_KG = 500.0
+        const val STEP_KG = 0.1
         const val MAX_NOTE_LENGTH = 200
     }
 }

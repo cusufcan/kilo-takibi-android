@@ -11,7 +11,6 @@
     <string name="add_title">Kilo ekle</string>
     <string name="edit_title">Kaydı düzenle</string>
     <string name="note_label">Not ekle (isteğe bağlı)</string>
-    <string name="weight_label">Kilo</string>
     <string name="weight_error">Geçerli bir kilo gir (1–500)</string>
     <string name="save">Kaydet</string>
     <string name="ok">Tamam</string>
@@ -48,11 +47,12 @@
     <string name="home_bmi_disclaimer">BMI genel bir göstergedir, teşhis değildir</string>
     <string name="home_title">Kilo takibi</string>
     <string name="home_goal_none">Hedef belirle</string>
-    <string name="back">Geri</string>
-    <string name="edit_date">Tarih</string>
     <string name="range_week">7G</string>
     <string name="range_month">30G</string>
     <string name="range_quarter">90G</string>
     <string name="range_all">Tümü</string>
     <string name="delete_confirm">Bu kayıt silinsin mi?</string>
+    <string name="note_add">Not</string>
+    <string name="step_down">Azalt</string>
+    <string name="step_up">Artır</string>
 </resources>

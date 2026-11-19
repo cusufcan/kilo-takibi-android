@@ -1,6 +1,5 @@
 package com.yusufcanmercan.weight_track_app.ui.edit
 
-import androidx.lifecycle.SavedStateHandle
 import com.yusufcanmercan.weight_track_app.data.local.Weight
 import com.yusufcanmercan.weight_track_app.data.repository.FakeWeightRepository
 import com.yusufcanmercan.weight_track_app.ui.home.MainDispatcherRule
@@ -20,7 +19,7 @@ class EditWeightViewModelTest {
     @Test
     fun `gecerli kilo kaydedilir virgullu giris de kabul`() = runTest {
         val repo = FakeWeightRepository()
-        val viewModel = EditWeightViewModel(repo, SavedStateHandle())
+        val viewModel = EditWeightViewModel(repo).apply { start(null) }
 
         viewModel.onWeightChange("80,5")
         viewModel.onSave()
@@ -32,7 +31,7 @@ class EditWeightViewModelTest {
     @Test
     fun `gecersiz kilo reddedilir ve kaydedilmez`() = runTest {
         val repo = FakeWeightRepository()
-        val viewModel = EditWeightViewModel(repo, SavedStateHandle())
+        val viewModel = EditWeightViewModel(repo).apply { start(null) }
 
         for (text in listOf("", "abc", "0", "-5", "501")) {
             viewModel.onWeightChange(text)
@@ -47,7 +46,7 @@ class EditWeightViewModelTest {
     @Test
     fun `duzenleme yeni kayit eklemez mevcut kaydi gunceller`() = runTest {
         val repo = FakeWeightRepository(listOf(Weight(id = 7, weight = 80.0, timeStamp = 1_000L)))
-        val viewModel = EditWeightViewModel(repo, SavedStateHandle(mapOf(EditWeightViewModel.ID_KEY to 7L)))
+        val viewModel = EditWeightViewModel(repo).apply { start(7L) }
         assertEquals("80.0", viewModel.uiState.value.weightText)
 
         viewModel.onWeightChange("79.5")
@@ -61,14 +60,14 @@ class EditWeightViewModelTest {
     @Test
     fun `not kirpilarak kaydedilir bos not null olur`() = runTest {
         val repo = FakeWeightRepository()
-        val viewModel = EditWeightViewModel(repo, SavedStateHandle())
+        val viewModel = EditWeightViewModel(repo).apply { start(null) }
         viewModel.onWeightChange("80")
         viewModel.onNoteChange("  tatilden döndüm  ")
         viewModel.onSave()
         assertEquals("tatilden döndüm", repo.observeAll().first().single().note)
 
         val repo2 = FakeWeightRepository()
-        val vm2 = EditWeightViewModel(repo2, SavedStateHandle())
+        val vm2 = EditWeightViewModel(repo2).apply { start(null) }
         vm2.onWeightChange("80")
         vm2.onNoteChange("   ")
         vm2.onSave()
@@ -77,7 +76,7 @@ class EditWeightViewModelTest {
 
     @Test
     fun `not uzunlugu sinirlanir`() = runTest {
-        val viewModel = EditWeightViewModel(FakeWeightRepository(), SavedStateHandle())
+        val viewModel = EditWeightViewModel(FakeWeightRepository()).apply { start(null) }
         viewModel.onNoteChange("a".repeat(500))
         assertEquals(EditWeightViewModel.MAX_NOTE_LENGTH, viewModel.uiState.value.noteText.length)
     }
@@ -85,7 +84,7 @@ class EditWeightViewModelTest {
     @Test
     fun `duzenlemede mevcut not yuklenir ve guncellenir`() = runTest {
         val repo = FakeWeightRepository(listOf(Weight(id = 7, weight = 80.0, timeStamp = 1_000L, note = "eski")))
-        val viewModel = EditWeightViewModel(repo, SavedStateHandle(mapOf(EditWeightViewModel.ID_KEY to 7L)))
+        val viewModel = EditWeightViewModel(repo).apply { start(7L) }
         assertEquals("eski", viewModel.uiState.value.noteText)
 
         viewModel.onNoteChange("yeni")
@@ -96,7 +95,7 @@ class EditWeightViewModelTest {
     @Test
     fun `duzenlenen kayit silinir ve ekran kapanir`() = runTest {
         val repo = FakeWeightRepository(listOf(Weight(id = 7, weight = 80.0, timeStamp = 1_000L)))
-        val viewModel = EditWeightViewModel(repo, SavedStateHandle(mapOf(EditWeightViewModel.ID_KEY to 7L)))
+        val viewModel = EditWeightViewModel(repo).apply { start(7L) }
 
         viewModel.onDelete()
 
@@ -107,11 +106,85 @@ class EditWeightViewModelTest {
     @Test
     fun `yeni kayitta silme hicbir sey yapmaz`() = runTest {
         val repo = FakeWeightRepository(listOf(Weight(id = 7, weight = 80.0, timeStamp = 1_000L)))
-        val viewModel = EditWeightViewModel(repo, SavedStateHandle())
+        val viewModel = EditWeightViewModel(repo).apply { start(null) }
 
         viewModel.onDelete()
 
         assertEquals(1, repo.observeAll().first().size)
         assertFalse(viewModel.uiState.value.saved)
+    }
+
+    @Test
+    fun `yeni kayit en son kiloyla dolu baslar`() = runTest {
+        val repo = FakeWeightRepository(
+            listOf(
+                Weight(id = 1, weight = 82.0, timeStamp = 1_000L),
+                Weight(id = 2, weight = 80.4, timeStamp = 3_000L),
+                Weight(id = 3, weight = 81.0, timeStamp = 2_000L),
+            ),
+        )
+        val viewModel = EditWeightViewModel(repo).apply { start(null) }
+
+        assertEquals("80.4", viewModel.uiState.value.weightText)
+        assertFalse(viewModel.uiState.value.isEditing)
+    }
+
+    @Test
+    fun `hic kayit yoksa kilo alani bos baslar`() = runTest {
+        val viewModel = EditWeightViewModel(FakeWeightRepository()).apply { start(null) }
+
+        assertEquals("", viewModel.uiState.value.weightText)
+    }
+
+    @Test
+    fun `arti eksi onda bir oynatir ve yuvarlar`() = runTest {
+        val viewModel = EditWeightViewModel(FakeWeightRepository()).apply { start(null) }
+        viewModel.onWeightChange("80")
+
+        viewModel.onStep(EditWeightViewModel.STEP_KG)
+        assertEquals("80.1", viewModel.uiState.value.weightText)
+        repeat(3) { viewModel.onStep(-EditWeightViewModel.STEP_KG) }
+        assertEquals("79.8", viewModel.uiState.value.weightText)
+    }
+
+    @Test
+    fun `arti eksi sinirlarin disina tasmaz`() = runTest {
+        val viewModel = EditWeightViewModel(FakeWeightRepository()).apply { start(null) }
+
+        viewModel.onWeightChange("500")
+        viewModel.onStep(EditWeightViewModel.STEP_KG)
+        assertEquals("500.0", viewModel.uiState.value.weightText)
+
+        viewModel.onWeightChange("1")
+        viewModel.onStep(-EditWeightViewModel.STEP_KG)
+        assertEquals("1.0", viewModel.uiState.value.weightText)
+    }
+
+    @Test
+    fun `bos ya da gecersiz alanda arti eksi bir sey yapmaz`() = runTest {
+        val viewModel = EditWeightViewModel(FakeWeightRepository()).apply { start(null) }
+
+        viewModel.onStep(EditWeightViewModel.STEP_KG)
+        assertEquals("", viewModel.uiState.value.weightText)
+
+        viewModel.onWeightChange("abc")
+        viewModel.onStep(EditWeightViewModel.STEP_KG)
+        assertEquals("abc", viewModel.uiState.value.weightText)
+    }
+
+    @Test
+    fun `start onceki acilistan kalan durumu siler`() = runTest {
+        val repo = FakeWeightRepository(listOf(Weight(id = 7, weight = 80.0, timeStamp = 1_000L, note = "eski")))
+        val viewModel = EditWeightViewModel(repo).apply { start(7L) }
+        viewModel.onSave()
+        assertTrue(viewModel.uiState.value.saved)
+
+        viewModel.start(null)
+
+        val state = viewModel.uiState.value
+        assertFalse(state.saved)
+        assertFalse(state.isEditing)
+        assertEquals("", state.noteText)
+        assertTrue(viewModel.isStarted)
     }
 }

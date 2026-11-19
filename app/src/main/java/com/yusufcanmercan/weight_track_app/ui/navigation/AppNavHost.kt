@@ -22,7 +22,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.yusufcanmercan.weight_track_app.R
-import com.yusufcanmercan.weight_track_app.ui.edit.EditWeightScreen
 import com.yusufcanmercan.weight_track_app.ui.home.HomeScreen
 import com.yusufcanmercan.weight_track_app.ui.settings.SettingsScreen
 
@@ -39,7 +38,7 @@ fun AppNavHost() {
         TopLevelItem(Home, R.string.nav_home, Icons.Default.Home),
         TopLevelItem(Settings, R.string.nav_settings, Icons.Default.Settings),
     )
-    // Alt çubuk yalnız iki ana ekranda görünür; Ekle/Düzenle tam ekran.
+    // Alt çubuk iki ana ekranda görünür (Ekle/Düzenle artık rota değil, alt sayfa: ADR-0015).
     val showBottomBar = topLevelItems.any { destination?.hasRoute(it.route::class) == true }
 
     Scaffold(
@@ -72,8 +71,6 @@ fun AppNavHost() {
         ) {
             composable<Home> {
                 HomeScreen(
-                    onAdd = { navController.navigate(EditWeight()) },
-                    onEdit = { id -> navController.navigate(EditWeight(id)) },
                     onOpenSettings = {
                         navController.navigate(Settings) {
                             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -84,12 +81,6 @@ fun AppNavHost() {
                 )
             }
             composable<Settings> { SettingsScreen() }
-            composable<EditWeight> {
-                EditWeightScreen(
-                    onSaved = { navController.popBackStack() },
-                    onBack = { navController.popBackStack() },
-                )
-            }
         }
     }
 }

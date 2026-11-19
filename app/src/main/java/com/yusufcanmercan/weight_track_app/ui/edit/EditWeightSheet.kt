@@ -1,85 +1,97 @@
 package com.yusufcanmercan.weight_track_app.ui.edit
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yusufcanmercan.weight_track_app.R
+import com.yusufcanmercan.weight_track_app.ui.edit.EditWeightViewModel.Companion.STEP_KG
 import com.yusufcanmercan.weight_track_app.ui.theme.Spacing
 import com.yusufcanmercan.weight_track_app.util.fromPickerMillis
 import com.yusufcanmercan.weight_track_app.util.toPickerMillis
+import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
 
-/** ViewModel'i bağlayan ince kabuk. Kaydedilince `onSaved`, geri okunda `onBack` ile kapanır. */
+/**
+ * Ekle/düzenle alt sayfası (ADR-0015). ViewModel'i açan ekran verir ve `start(id)` ile kurar;
+ * kaydedilince/silinince sayfa kayarak kapanır, sonra `onDismiss` çağrılır.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditWeightScreen(
-    onSaved: () -> Unit,
-    onBack: () -> Unit,
-    viewModel: EditWeightViewModel = hiltViewModel(),
-) {
+fun EditWeightSheet(viewModel: EditWeightViewModel, onDismiss: () -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    // Yarım açık durak yok: sayfa ya tam açık ya kapalı.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+    val close: () -> Unit = { scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() } }
+
     LaunchedEffect(state.saved) {
-        if (state.saved) onSaved()
+        if (state.saved) close()
     }
-    EditWeightContent(
-        state = state,
-        onWeightChange = viewModel::onWeightChange,
-        onNoteChange = viewModel::onNoteChange,
-        onDateChange = viewModel::onDateChange,
-        onSave = viewModel::onSave,
-        onDelete = viewModel::onDelete,
-        onBack = onBack,
-    )
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        EditWeightContent(
+            state = state,
+            onWeightChange = viewModel::onWeightChange,
+            onStep = viewModel::onStep,
+            onNoteChange = viewModel::onNoteChange,
+            onDateChange = viewModel::onDateChange,
+            onSave = viewModel::onSave,
+            onDelete = viewModel::onDelete,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,27 +99,26 @@ fun EditWeightScreen(
 fun EditWeightContent(
     state: EditUiState,
     onWeightChange: (String) -> Unit,
+    onStep: (Double) -> Unit,
     onNoteChange: (String) -> Unit,
     onDateChange: (Long) -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit,
-    onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    // Not alanı istenince açılır; düzenlenen kayıtta not varsa baştan açık.
+    var noteOpen by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .padding(Spacing.lg),
+            .fillMaxWidth()
+            .imePadding()
+            .padding(start = Spacing.xl, end = Spacing.xl, bottom = Spacing.xl),
         verticalArrangement = Arrangement.spacedBy(Spacing.lg),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-            }
-            Spacer(Modifier.width(Spacing.xs))
             Text(
                 text = stringResource(if (state.isEditing) R.string.edit_title else R.string.add_title),
                 style = MaterialTheme.typography.titleLarge,
@@ -123,19 +134,34 @@ fun EditWeightContent(
                 }
             }
         }
-        WeightValueBox(state.weightText, state.weightError, onWeightChange)
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-        ) {
-            Column {
-                DateRow(state.dateMillis, onClick = { showDatePicker = true })
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                NoteRow(state.noteText, onNoteChange)
-            }
+
+        WeightStepper(state.weightText, state.weightError, onWeightChange, onStep)
+
+        // Tarih ve not: tek satırda iki küçük düğme; ana dikkat kiloda kalsın.
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            AssistChip(
+                onClick = { showDatePicker = true },
+                label = { Text(DateFormat.getDateInstance().format(Date(state.dateMillis))) },
+                leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(18.dp)) },
+            )
+            AssistChip(
+                onClick = { noteOpen = true },
+                label = {
+                    Text(
+                        text = state.noteText.ifEmpty { stringResource(R.string.note_add) },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                modifier = Modifier.weight(1f, fill = false),
+            )
         }
-        Spacer(Modifier.weight(1f))
-        // Ekrandaki tek ana buton: tam genişlik, hap, mor (tasarim.md).
+        if (noteOpen || state.noteText.isNotEmpty()) {
+            NoteField(state.noteText, onNoteChange)
+        }
+
+        // Tek ana buton: tam genişlik, hap, mor (tasarim.md).
         Button(
             onClick = onSave,
             shape = CircleShape,
@@ -183,43 +209,44 @@ fun EditWeightContent(
     }
 }
 
-/** Büyük değer kutusu: ortada kocaman kilo, sonunda " kg" eki. */
+/** Ortada büyük kilo (elle de yazılabilir), iki yanında 0,1 kg'lık −/+ düğmeleri. */
 @Composable
-private fun WeightValueBox(text: String, isError: Boolean, onChange: (String) -> Unit) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-    ) {
-        Column(
-            modifier = Modifier.padding(Spacing.lg),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            Text(
-                text = stringResource(R.string.weight_label),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+private fun WeightStepper(
+    text: String,
+    isError: Boolean,
+    onChange: (String) -> Unit,
+    onStep: (Double) -> Unit,
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val stepDown = stringResource(R.string.step_down)
+            StepButton(onClick = { onStep(-STEP_KG) }) {
+                // Çekirdek ikon setinde eksi yok; metin eksi işareti, ekran okuyucuya "Azalt".
+                Text(
+                    "−",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.semantics { contentDescription = stepDown },
+                )
+            }
             BasicTextField(
                 value = text,
                 onValueChange = onChange,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 visualTransformation = KgSuffix,
-                textStyle = MaterialTheme.typography.displaySmall.copy(
+                textStyle = MaterialTheme.typography.displayMedium.copy(
                     color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                 ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(1f),
                 decorationBox = { field ->
-                    // Boşken kutu çıplak görünmesin: soluk örnek değer.
+                    // Boşken (ilk kayıt) soluk örnek değer.
                     Box(contentAlignment = Alignment.Center) {
                         if (text.isEmpty()) {
                             Text(
                                 text = stringResource(R.string.weight_kg, 0.0),
-                                style = MaterialTheme.typography.displaySmall,
+                                style = MaterialTheme.typography.displayMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
@@ -227,84 +254,31 @@ private fun WeightValueBox(text: String, isError: Boolean, onChange: (String) ->
                     }
                 },
             )
-            if (isError) {
-                Text(
-                    text = stringResource(R.string.weight_error),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
+            StepButton(onClick = { onStep(STEP_KG) }) {
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.step_up))
             }
+        }
+        if (isError) {
+            Text(
+                text = stringResource(R.string.weight_error),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = Spacing.sm),
+            )
         }
     }
 }
 
-/**
- * Metnin sonuna yalnız görüntüde " kg" ekler; kayıtlı değer değişmez.
- * İmleç eke giremez: görüntüdeki konum metin uzunluğunu aşarsa sona sabitlenir.
- */
-private object KgSuffix : VisualTransformation {
-    override fun filter(text: AnnotatedString): TransformedText {
-        if (text.isEmpty()) return TransformedText(text, OffsetMapping.Identity)
-        val length = text.length
-        return TransformedText(
-            AnnotatedString(text.text + " kg"),
-            object : OffsetMapping {
-                override fun originalToTransformed(offset: Int) = offset
-                override fun transformedToOriginal(offset: Int) = offset.coerceAtMost(length)
-            },
-        )
-    }
+@Composable
+private fun StepButton(onClick: () -> Unit, content: @Composable () -> Unit) {
+    FilledTonalIconButton(onClick = onClick, modifier = Modifier.size(56.dp), content = content)
 }
 
-/** Grup satırı: solda ikon, ortada içerik, `lg`/`md` dolgu. */
+/** Not alanı: açık gri yüzey içinde çıplak metin alanı, altta karakter sayacı. */
 @Composable
-private fun GroupRow(
-    icon: @Composable () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit,
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-    ) {
-        icon()
-        content()
-    }
-}
-
-@Composable
-private fun DateRow(dateMillis: Long, onClick: () -> Unit) {
-    GroupRow(
-        icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
-        modifier = Modifier.clickable(onClick = onClick),
-    ) {
-        Text(
-            text = stringResource(R.string.edit_date),
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f),
-        )
-        Text(
-            text = DateFormat.getDateInstance().format(Date(dateMillis)),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Icon(
-            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun NoteRow(text: String, onChange: (String) -> Unit) {
-    GroupRow(
-        icon = { Icon(Icons.Default.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
+private fun NoteField(text: String, onChange: (String) -> Unit) {
+    Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainer) {
+        Column(Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.md)) {
             BasicTextField(
                 value = text,
                 onValueChange = onChange,
@@ -334,5 +308,23 @@ private fun NoteRow(text: String, onChange: (String) -> Unit) {
                     .padding(top = Spacing.xs),
             )
         }
+    }
+}
+
+/**
+ * Metnin sonuna yalnız görüntüde " kg" ekler; kayıtlı değer değişmez.
+ * İmleç eke giremez: görüntüdeki konum metin uzunluğunu aşarsa sona sabitlenir.
+ */
+private object KgSuffix : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        if (text.isEmpty()) return TransformedText(text, OffsetMapping.Identity)
+        val length = text.length
+        return TransformedText(
+            AnnotatedString(text.text + " kg"),
+            object : OffsetMapping {
+                override fun originalToTransformed(offset: Int) = offset
+                override fun transformedToOriginal(offset: Int) = offset.coerceAtMost(length)
+            },
+        )
     }
 }

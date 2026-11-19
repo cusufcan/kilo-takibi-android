@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yusufcanmercan.weight_track_app.R
 import com.yusufcanmercan.weight_track_app.data.local.Weight
+import com.yusufcanmercan.weight_track_app.ui.edit.EditWeightSheet
+import com.yusufcanmercan.weight_track_app.ui.edit.EditWeightViewModel
 import com.yusufcanmercan.weight_track_app.ui.theme.LocalChangeColors
 import com.yusufcanmercan.weight_track_app.ui.theme.Spacing
 import java.text.DateFormat
@@ -59,16 +62,28 @@ import kotlin.math.abs
 /** ViewModel'i bağlayan ince kabuk. Çizimi `HomeContent` yapar. */
 @Composable
 fun HomeScreen(
-    onAdd: () -> Unit,
-    onEdit: (Long) -> Unit,
     onOpenSettings: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
+    editViewModel: EditWeightViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    // Sayfa açık mı ve hangi kayıt: döndürmede ve süreç ölümünde korunur (ADR-0015).
+    var sheetOpen by rememberSaveable { mutableStateOf(false) }
+    var editId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val open: (Long?) -> Unit = { id ->
+        editId = id
+        editViewModel.start(id)
+        sheetOpen = true
+    }
+    // Süreç ölüp geri gelince sayfa açık ama ViewModel yeni: aynı kaydı yeniden yükle.
+    LaunchedEffect(sheetOpen) {
+        if (sheetOpen && !editViewModel.isStarted) editViewModel.start(editId)
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
-        HomeContent(state = state, onEdit = onEdit, onOpenSettings = onOpenSettings)
+        HomeContent(state = state, onEdit = { open(it) }, onOpenSettings = onOpenSettings)
         FloatingActionButton(
-            onClick = onAdd,
+            onClick = { open(null) },
             shape = MaterialTheme.shapes.medium,
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -78,6 +93,9 @@ fun HomeScreen(
         ) {
             Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_title))
         }
+    }
+    if (sheetOpen) {
+        EditWeightSheet(viewModel = editViewModel, onDismiss = { sheetOpen = false })
     }
 }
 
