@@ -7,14 +7,26 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.After
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.util.Locale
 
 class EditWeightViewModelTest {
 
     @get:Rule
     val mainRule = MainDispatcherRule()
+
+    // Ondalık ayraç cihaz dilinden gelir; testler makinenin diline bağlı kalmasın.
+    private val savedLocale = Locale.getDefault()
+
+    @Before
+    fun setUp() = Locale.setDefault(Locale.US)
+
+    @After
+    fun tearDown() = Locale.setDefault(savedLocale)
 
     @Test
     fun `gecerli kilo kaydedilir virgullu giris de kabul`() = runTest {
@@ -186,5 +198,19 @@ class EditWeightViewModelTest {
         assertFalse(state.isEditing)
         assertEquals("", state.noteText)
         assertTrue(viewModel.isStarted)
+    }
+
+    @Test
+    fun `turkcede kilo virgulle gosterilir`() = runTest {
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"))
+        val repo = FakeWeightRepository(listOf(Weight(id = 1, weight = 67.0, timeStamp = 1_000L)))
+        val viewModel = EditWeightViewModel(repo).apply { start(null) }
+        assertEquals("67,0", viewModel.uiState.value.weightText)
+
+        viewModel.onStep(EditWeightViewModel.STEP_KG)
+        assertEquals("67,1", viewModel.uiState.value.weightText)
+
+        viewModel.onSave()
+        assertEquals(67.1, repo.observeAll().first().maxBy { it.id }.weight, 0.0)
     }
 }

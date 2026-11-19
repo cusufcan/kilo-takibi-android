@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.DecimalFormatSymbols
 import javax.inject.Inject
 import kotlin.math.roundToLong
 
@@ -54,7 +55,7 @@ class EditWeightViewModel @Inject constructor(
                     original = weight
                     _uiState.update {
                         it.copy(
-                            weightText = weight.weight.toString(),
+                            weightText = formatKg(weight.weight),
                             noteText = weight.note.orEmpty(),
                             dateMillis = startOfDay(weight.timeStamp),
                         )
@@ -63,7 +64,7 @@ class EditWeightViewModel @Inject constructor(
             } else {
                 // Yeni kayıt son kiloyla başlar: çoğu gün yalnız birkaç kez −/+ yeter.
                 repository.observeAll().first().maxByOrNull { it.timeStamp }?.let { last ->
-                    _uiState.update { it.copy(weightText = last.weight.toString()) }
+                    _uiState.update { it.copy(weightText = formatKg(last.weight)) }
                 }
             }
         }
@@ -77,7 +78,7 @@ class EditWeightViewModel @Inject constructor(
     fun onStep(delta: Double) {
         val current = parseKg(_uiState.value.weightText) ?: return
         val next = ((current + delta) * 10).roundToLong() / 10.0
-        onWeightChange(next.coerceIn(MIN_KG, MAX_KG).toString())
+        onWeightChange(formatKg(next.coerceIn(MIN_KG, MAX_KG)))
     }
 
     fun onNoteChange(text: String) {
@@ -119,6 +120,13 @@ class EditWeightViewModel @Inject constructor(
 
     /** Virgüllü giriş ("80,5") de kabul. */
     private fun parseKg(text: String): Double? = text.replace(',', '.').toDoubleOrNull()
+
+    /**
+     * Sayıyı alana yazılacak metne çevirir; ayraç cihaz dilinden gelir (TR "67,1", EN "67.1"),
+     * ana sayfadaki gösterimle aynı olsun diye. Yuvarlamaz: 80.25 "80,25" kalır.
+     */
+    private fun formatKg(value: Double): String =
+        value.toString().replace('.', DecimalFormatSymbols.getInstance().decimalSeparator)
 
     companion object {
         const val MIN_KG = 1.0
