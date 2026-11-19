@@ -1,4 +1,4 @@
-package com.yusufcanmercan.weight_track_app.ui.graph
+package com.yusufcanmercan.weight_track_app.ui.home
 
 import com.yusufcanmercan.weight_track_app.data.local.Weight
 import kotlin.math.roundToLong

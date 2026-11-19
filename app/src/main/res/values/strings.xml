@@ -3,13 +3,11 @@
     <string name="app_name" translatable="false">Kilo Takibi</string>
     <string name="home_empty_title">İlk kaydını ekle</string>
     <string name="home_empty_hint">Sağ alttaki + düğmesiyle kilonu kaydet; gelişimini burada göreceksin.</string>
-    <string name="home_current">Güncel kilo</string>
     <string name="home_week_change">%1$+.1f kg bu hafta</string>
     <string name="home_week_no_data">Haftalık değişim için 7 günlük kayıt gerek</string>
     <string name="change_kg">%1$+.1f kg</string>
     <string name="weight_kg">%.1f kg</string>
     <string name="delete">Sil</string>
-    <string name="edit">Düzenle</string>
     <string name="add_title">Kilo ekle</string>
     <string name="edit_title">Kaydı düzenle</string>
     <string name="note_label">Not ekle (isteğe bağlı)</string>
@@ -19,7 +17,6 @@
     <string name="ok">Tamam</string>
     <string name="cancel">Vazgeç</string>
     <string name="nav_home">Ana sayfa</string>
-    <string name="nav_graph">Grafik</string>
     <string name="nav_settings">Ayarlar</string>
     <string name="settings_theme">Tema</string>
     <string name="theme_system">Sistem</string>
@@ -29,8 +26,6 @@
     <string name="language_system">Sistem</string>
     <string name="language_tr" translatable="false">Türkçe</string>
     <string name="language_en" translatable="false">English</string>
-    <string name="graph_empty">Grafik için kayıt ekle</string>
-    <string name="graph_change">Değişim: %1$+.1f kg</string>
     <string name="home_goal_remaining">%1$.1f kg kaldı</string>
     <string name="home_goal_reached">Ulaştın!</string>
     <string name="graph_goal_label">Hedef %1$.1f kg</string>
@@ -41,7 +36,6 @@
     <string name="settings_goal_save">Kaydet</string>
     <string name="home_goal_reached_below">Hedefin %1$.1f kg altında</string>
     <string name="home_goal_reached_above">Hedefin %1$.1f kg üstünde</string>
-    <string name="home_goal_new">Yeni hedef</string>
     <string name="settings_height">Boy</string>
     <string name="settings_height_field">Boy (cm)</string>
     <string name="settings_height_hint">BMI için. Boş bırakıp kaydedersen boy silinir</string>
@@ -52,11 +46,13 @@
     <string name="bmi_overweight">Fazla kilolu</string>
     <string name="bmi_obese">Obez</string>
     <string name="home_bmi_disclaimer">BMI genel bir göstergedir, teşhis değildir</string>
-    <string name="home_greeting">Merhaba</string>
     <string name="home_title">Kilo takibi</string>
-    <string name="home_history">Geçmiş</string>
-    <string name="home_goal_label">Hedef %1$.1f kg</string>
     <string name="home_goal_none">Hedef belirle</string>
     <string name="back">Geri</string>
     <string name="edit_date">Tarih</string>
+    <string name="range_week">7G</string>
+    <string name="range_month">30G</string>
+    <string name="range_quarter">90G</string>
+    <string name="range_all">Tümü</string>
+    <string name="delete_confirm">Bu kayıt silinsin mi?</string>
 </resources>

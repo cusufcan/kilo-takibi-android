@@ -1,9 +1,24 @@
 package com.yusufcanmercan.weight_track_app.ui.home
 
 import com.yusufcanmercan.weight_track_app.data.local.Weight
+import java.util.Calendar
+import java.util.TimeZone
 
 private const val WEEK_MS = 7 * 24 * 60 * 60 * 1000L
-private const val TREND_SIZE = 10
+
+/**
+ * Satırları yerel takvim ayına göre gruplar; gelen sıra korunur (en yeni üstte gelir, en yeni ay üstte kalır).
+ * `java.time` minSdk 25'te yok, bu yüzden `Calendar`. Saat dilimi test için dışarıdan verilebilir.
+ */
+fun groupByMonth(items: List<HomeItem>, timeZone: TimeZone = TimeZone.getDefault()): List<MonthGroup> {
+    val calendar = Calendar.getInstance(timeZone)
+    return items
+        .groupBy { item ->
+            calendar.timeInMillis = item.weight.timeStamp
+            calendar.get(Calendar.YEAR) to calendar.get(Calendar.MONTH)
+        }
+        .map { (key, monthItems) -> MonthGroup(key.first, key.second, monthItems) }
+}
 
 /**
  * Kayıtlardan ana sayfa durumunu üretir. Android'e bağlı değil, yalnız hesap; düz birim testle doğrulanır.
@@ -22,7 +37,7 @@ fun buildHomeState(weights: List<Weight>, goalKg: Double? = null, heightCm: Doub
         items = items,
         latest = latest,
         weeklyChange = if (latest != null && weekAgo != null) latest.weight - weekAgo.weight else null,
-        trend = oldestFirst.takeLast(TREND_SIZE).map { it.weight },
+        months = groupByMonth(items),
         bmi = if (heightCm != null && latest != null) calculateBmi(latest.weight, heightCm) else null,
         hasHeight = heightCm != null,
         goal = if (goalKg != null && latest != null) goalProgress(oldestFirst.first().weight, latest.weight, goalKg) else null,

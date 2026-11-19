@@ -84,6 +84,15 @@ class EditWeightViewModel @Inject constructor(
         }
     }
 
+    /** Düzenlenen kaydı siler ve ekranı kapatır (silme ana sayfadan buraya taşındı, tasarim.md v2). */
+    fun onDelete() {
+        val old = original ?: return
+        viewModelScope.launch {
+            repository.delete(old)
+            _uiState.update { it.copy(saved = true) }
+        }
+    }
+
     companion object {
         const val ID_KEY = "id"
         const val MIN_KG = 1.0

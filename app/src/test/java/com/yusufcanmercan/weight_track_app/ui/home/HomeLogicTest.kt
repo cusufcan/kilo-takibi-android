@@ -6,6 +6,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.TimeZone
 
 class HomeLogicTest {
     private val day = 24 * 60 * 60 * 1000L
@@ -36,7 +37,6 @@ class HomeLogicTest {
         val state = buildHomeState(listOf(w(2, 79.0, 5), w(1, 80.0, 1)))
 
         assertEquals(2L, state.latest!!.id)
-        assertEquals(listOf(80.0, 79.0), state.trend)
     }
 
     @Test
@@ -55,12 +55,25 @@ class HomeLogicTest {
     }
 
     @Test
-    fun `mini grafik son on kayitla sinirlidir`() {
-        val state = buildHomeState((1..15).map { w(it.toLong(), 70.0 + it, it) })
+    fun `satirlar yerel aya gore gruplanir en yeni ay ustte`() {
+        val utc = TimeZone.getTimeZone("UTC")
+        // 1970: 30 Ocak, 31 Ocak, 1 Şubat, 15 Şubat (gün 0 = 1 Ocak).
+        val items = buildHomeState(listOf(w(1, 80.0, 29), w(2, 79.0, 30), w(3, 78.0, 31), w(4, 77.0, 45))).items
 
-        assertEquals(10, state.trend.size)
-        assertEquals(76.0, state.trend.first(), 1e-9)
-        assertEquals(85.0, state.trend.last(), 1e-9)
+        val months = groupByMonth(items, utc)
+
+        assertEquals(listOf(1970 to 1, 1970 to 0), months.map { it.year to it.month })
+        assertEquals(listOf(4L, 3L), months[0].items.map { it.weight.id })
+        assertEquals(listOf(2L, 1L), months[1].items.map { it.weight.id })
+    }
+
+    @Test
+    fun `ay sinirinda saat dilimi dikkate alinir`() {
+        // 31 Ocak 23:00 UTC = İstanbul'da 1 Şubat 02:00.
+        val item = HomeItem(Weight(1, 80.0, 30 * day + 23 * 60 * 60 * 1000L), null)
+
+        assertEquals(0, groupByMonth(listOf(item), TimeZone.getTimeZone("UTC")).single().month)
+        assertEquals(1, groupByMonth(listOf(item), TimeZone.getTimeZone("Europe/Istanbul")).single().month)
     }
 
     @Test

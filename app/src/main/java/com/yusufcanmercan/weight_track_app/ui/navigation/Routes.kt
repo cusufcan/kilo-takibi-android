@@ -7,9 +7,6 @@ import kotlinx.serialization.Serializable
 data object Home
 
 @Serializable
-data object Graph
-
-@Serializable
 data object Settings
 
 /** Yalnız `id` taşınır; `null` = yeni kayıt. Argüman ViewModel'in SavedStateHandle'ına `id` adıyla düşer. */

@@ -44,17 +44,4 @@ class HomeViewModelTest {
         assertFalse(state.isLoading)
         assertEquals(listOf(2L, 3L, 1L), state.items.map { it.weight.id })
     }
-
-    @Test
-    fun `silinen kayit durumdan kalkar`() = runTest {
-        val repo = FakeWeightRepository(listOf(Weight(id = 1, weight = 80.0, timeStamp = 1_000L)))
-        val viewModel = HomeViewModel(repo, FakeSettingsRepository())
-        backgroundScope.launch { viewModel.uiState.collect {} }
-        runCurrent()
-
-        viewModel.onDelete(viewModel.uiState.value.items.single().weight)
-
-        assertTrue(viewModel.uiState.value.items.isEmpty())
-        assertFalse(viewModel.uiState.value.isLoading)
-    }
 }

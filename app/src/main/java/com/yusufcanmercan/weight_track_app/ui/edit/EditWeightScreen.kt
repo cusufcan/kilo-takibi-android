@@ -19,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -75,6 +77,7 @@ fun EditWeightScreen(
         onNoteChange = viewModel::onNoteChange,
         onDateChange = viewModel::onDateChange,
         onSave = viewModel::onSave,
+        onDelete = viewModel::onDelete,
         onBack = onBack,
     )
 }
@@ -87,10 +90,12 @@ fun EditWeightContent(
     onNoteChange: (String) -> Unit,
     onDateChange: (Long) -> Unit,
     onSave: () -> Unit,
+    onDelete: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -106,7 +111,17 @@ fun EditWeightContent(
             Text(
                 text = stringResource(if (state.isEditing) R.string.edit_title else R.string.add_title),
                 style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f),
             )
+            if (state.isEditing) {
+                IconButton(onClick = { showDeleteConfirm = true }) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.delete),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
         }
         WeightValueBox(state.weightText, state.weightError, onWeightChange)
         Surface(
@@ -148,6 +163,23 @@ fun EditWeightContent(
         ) {
             DatePicker(state = pickerState)
         }
+    }
+
+    // Silme geri alınamaz: önce sor.
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            text = { Text(stringResource(R.string.delete_confirm)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirm = false
+                    onDelete()
+                }) { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        )
     }
 }
 

@@ -92,4 +92,26 @@ class EditWeightViewModelTest {
         viewModel.onSave()
         assertEquals("yeni", repo.observeAll().first().single().note)
     }
+
+    @Test
+    fun `duzenlenen kayit silinir ve ekran kapanir`() = runTest {
+        val repo = FakeWeightRepository(listOf(Weight(id = 7, weight = 80.0, timeStamp = 1_000L)))
+        val viewModel = EditWeightViewModel(repo, SavedStateHandle(mapOf(EditWeightViewModel.ID_KEY to 7L)))
+
+        viewModel.onDelete()
+
+        assertTrue(repo.observeAll().first().isEmpty())
+        assertTrue(viewModel.uiState.value.saved)
+    }
+
+    @Test
+    fun `yeni kayitta silme hicbir sey yapmaz`() = runTest {
+        val repo = FakeWeightRepository(listOf(Weight(id = 7, weight = 80.0, timeStamp = 1_000L)))
+        val viewModel = EditWeightViewModel(repo, SavedStateHandle())
+
+        viewModel.onDelete()
+
+        assertEquals(1, repo.observeAll().first().size)
+        assertFalse(viewModel.uiState.value.saved)
+    }
 }

@@ -2,7 +2,6 @@ package com.yusufcanmercan.weight_track_app.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yusufcanmercan.weight_track_app.data.local.Weight
 import com.yusufcanmercan.weight_track_app.data.repository.WeightRepository
 import com.yusufcanmercan.weight_track_app.data.settings.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,12 +9,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: WeightRepository,
+    repository: WeightRepository,
     settings: SettingsRepository,
 ) : ViewModel() {
 
@@ -29,9 +27,4 @@ class HomeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = HomeUiState(),
         )
-
-    /** Olay yukarı akar: ekran -> ViewModel. */
-    fun onDelete(weight: Weight) {
-        viewModelScope.launch { repository.delete(weight) }
-    }
 }
