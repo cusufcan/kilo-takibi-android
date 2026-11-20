@@ -79,7 +79,7 @@ private fun Chart(data: ChartData, modifier: Modifier = Modifier) {
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val bubbleColor = MaterialTheme.colorScheme.inverseSurface
     val bubbleTextStyle = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.inverseOnSurface)
-    val goalColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val goalColor = MaterialTheme.colorScheme.secondary
     val goalTextStyle = MaterialTheme.typography.labelSmall.copy(color = goalColor)
     val goalLabel = data.goalKg?.let { stringResource(R.string.graph_goal_label, it) }.orEmpty()
     val measurer = rememberTextMeasurer()

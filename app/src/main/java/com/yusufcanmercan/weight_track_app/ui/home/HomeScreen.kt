@@ -189,7 +189,7 @@ private fun Card(
 /** Kahraman kart: açık mor zeminde "Son kilo", büyük sayı, haftalık rozet. */
 @Composable
 private fun HeroCard(latest: Weight, weeklyChange: Double?, modifier: Modifier = Modifier) {
-    Card(modifier, color = MaterialTheme.colorScheme.primaryContainer) {
+    Card(modifier, shape = MaterialTheme.shapes.extraLarge, color = MaterialTheme.colorScheme.primaryContainer) {
         Text(
             text = stringResource(R.string.home_latest),
             style = MaterialTheme.typography.labelLarge,
@@ -388,7 +388,7 @@ private fun ChangeBadge(change: Double, textRes: Int) {
     val (container, content) = when {
         change < 0 -> colors.decreaseContainer to colors.onDecreaseContainer
         change > 0 -> colors.increaseContainer to colors.onIncreaseContainer
-        else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
+        else -> MaterialTheme.colorScheme.surfaceContainerHigh to MaterialTheme.colorScheme.onSurfaceVariant
     }
     Surface(shape = CircleShape, color = container, contentColor = content) {
         // İç dolgu 10/2 dp rozetin kendi ölçüsü (tasarim.md istisnası).
