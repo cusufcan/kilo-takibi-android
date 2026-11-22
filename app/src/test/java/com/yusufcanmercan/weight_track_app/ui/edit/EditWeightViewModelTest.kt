@@ -61,6 +61,19 @@ class EditWeightViewModelTest {
     }
 
     @Test
+    fun `gelecek gun secilemez gecmis gun secilebilir`() = runTest {
+        val viewModel = EditWeightViewModel(FakeWeightRepository()).apply { start(null) }
+        val before = viewModel.uiState.value.dateMillis
+        val day = 24L * 60 * 60 * 1000
+
+        viewModel.onDateChange(before + 2 * day)
+        assertEquals(before, viewModel.uiState.value.dateMillis)
+
+        viewModel.onDateChange(before - 3 * day)
+        assertTrue(viewModel.uiState.value.dateMillis < before - 2 * day)
+    }
+
+    @Test
     fun `gecersiz kilo reddedilir ve kaydedilmez`() = runTest {
         val repo = FakeWeightRepository()
         val viewModel = EditWeightViewModel(repo).apply { start(null) }

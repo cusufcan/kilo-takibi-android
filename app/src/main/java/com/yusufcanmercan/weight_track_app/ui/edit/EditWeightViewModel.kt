@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.yusufcanmercan.weight_track_app.data.local.Weight
 import com.yusufcanmercan.weight_track_app.data.local.hasKnownMeasurementTime
 import com.yusufcanmercan.weight_track_app.data.repository.WeightRepository
+import com.yusufcanmercan.weight_track_app.util.startOfDay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.CancellationException
@@ -101,7 +102,9 @@ class EditWeightViewModel @Inject constructor(
         _uiState.update { it.copy(noteText = text.take(MAX_NOTE_LENGTH)) }
     }
 
+    /** Gelecek gün seçilemez; seçici zaten kapatır, bu ikinci emniyet (eğilim ve seri bozulmasın). */
     fun onDateChange(dateMillis: Long) {
+        if (startOfDay(dateMillis) > startOfDay(System.currentTimeMillis())) return
         _uiState.update { state ->
             val day = Calendar.getInstance().apply { timeInMillis = dateMillis }
             val measuredAt = Calendar.getInstance().apply {

@@ -412,7 +412,14 @@ private fun EntryFormFields(
     }
     HorizontalDivider(color = colors.outlineVariant)
     if (showDate) {
-        val date = rememberDatePickerState(initialSelectedDateMillis = toPickerMillis(state.dateMillis))
+        val todayPicker = remember { toPickerMillis(System.currentTimeMillis()) }
+        val date = rememberDatePickerState(
+            initialSelectedDateMillis = toPickerMillis(state.dateMillis),
+            yearRange = DatePickerDefaults.YearRange.first..Calendar.getInstance()[Calendar.YEAR],
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis <= todayPicker
+            },
+        )
         DatePickerDialog(
             onDismissRequest = { showDate = false },
             confirmButton = {
