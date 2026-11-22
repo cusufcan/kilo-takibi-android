@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    <path
+        android:fillColor="@color/seyir_splash_badge"
+        android:pathData="M144,80 a64,64 0 1,1 0,128 a64,64 0 1,1 0,-128 Z" />
+    <group
+        android:scaleX="3.5"
+        android:scaleY="3.5"
+        android:translateX="102"
+        android:translateY="102">
+        <path
+            android:pathData="@string/seyir_scale_body_path"
+            android:strokeColor="@color/seyir_splash_mark"
+            android:strokeWidth="1.65" />
+        <path
+            android:pathData="@string/seyir_scale_display_path"
+            android:strokeColor="@color/seyir_splash_mark"
+            android:strokeWidth="1.65" />
+        <path
+            android:pathData="@string/seyir_scale_digit_path"
+            android:strokeColor="@color/seyir_splash_mark"
+            android:strokeLineCap="round"
+            android:strokeWidth="1.35" />
+    </group>
+</vector>

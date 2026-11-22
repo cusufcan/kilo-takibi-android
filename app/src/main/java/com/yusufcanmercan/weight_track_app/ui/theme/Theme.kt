@@ -30,10 +30,12 @@ fun KiloTakibiTheme(
     }
     CompositionLocalProvider(
         LocalChangeColors provides if (darkTheme) DarkChangeColors else LightChangeColors,
+        LocalSeyirColors provides if (darkTheme) DarkSeyirColors else LightSeyirColors,
     ) {
         MaterialTheme(
             colorScheme = if (darkTheme) DarkColors else LightColors,
             shapes = AppShapes,
+            typography = SeyirTypography,
             content = content,
         )
     }

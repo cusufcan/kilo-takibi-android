@@ -2,4 +2,7 @@
 <resources>
     <!-- Launcher ikonu temadan bağımsızdır; marka moru ADR-0010 ile aynı (#6200EE). -->
     <color name="ic_launcher_background">#6200EE</color>
+    <color name="seyir_splash_background">#FCF8FF</color>
+    <color name="seyir_splash_badge">#EDDCFF</color>
+    <color name="seyir_splash_mark">#6200EE</color>
 </resources>

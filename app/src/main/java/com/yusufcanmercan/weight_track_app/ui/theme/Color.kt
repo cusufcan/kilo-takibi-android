@@ -81,3 +81,33 @@ val DarkChangeColors = ChangeColors(
 )
 
 val LocalChangeColors = staticCompositionLocalOf { LightChangeColors }
+
+@Immutable
+internal data class SeyirColors(
+    val tonalDecoration: Color,
+    val chartDots: Color,
+    val heatLow: Color,
+    val heatHigh: Color,
+    val heatSelected: Color,
+    val onHeatSelected: Color,
+)
+
+internal val LightSeyirColors = SeyirColors(
+    tonalDecoration = Color(0xFFDECAF1),
+    chartDots = Color(0xFF80758A),
+    heatLow = Color(0xFFE8DFF1),
+    heatHigh = Color(0xFFD4BDEC),
+    heatSelected = Color(0xFF644789),
+    onHeatSelected = Color.White,
+)
+
+internal val DarkSeyirColors = SeyirColors(
+    tonalDecoration = Color(0xFF4D336E),
+    chartDots = Color(0xFFA49AAE),
+    heatLow = Color(0xFF2B2630),
+    heatHigh = Color(0xFF4D336E),
+    heatSelected = Color(0xFFDBB8FF),
+    onHeatSelected = Color(0xFF381E72),
+)
+
+internal val LocalSeyirColors = staticCompositionLocalOf { LightSeyirColors }

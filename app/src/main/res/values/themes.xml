@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Compose kendi temasını çizer; bu yalnız pencerenin açılış (splash) arka planı. -->
     <style name="Theme.KiloTakibi" parent="Theme.AppCompat.DayNight.NoActionBar" />
+
+    <style name="Theme.KiloTakibi.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/seyir_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_seyir_splash</item>
+        <item name="windowSplashScreenAnimationDuration">0</item>
+        <item name="postSplashScreenTheme">@style/Theme.KiloTakibi</item>
+    </style>
 </resources>
