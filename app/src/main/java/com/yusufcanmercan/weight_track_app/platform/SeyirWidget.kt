@@ -1,5 +1,6 @@
 package com.yusufcanmercan.weight_track_app.platform
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -27,6 +28,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import java.util.Calendar
 import java.util.TimeZone
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,8 +43,17 @@ interface WidgetDependencies {
 }
 
 class SeyirWidget : AppWidgetProvider() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == MIDNIGHT_ACTION) refresh(context) else super.onReceive(context, intent)
+    }
+
+    override fun onDisabled(context: Context) {
+        context.getSystemService(AlarmManager::class.java).cancel(midnightIntent(context))
+    }
+
     override fun onUpdate(context: Context, manager: AppWidgetManager, appWidgetIds: IntArray) {
         if (appWidgetIds.isEmpty()) return
+        scheduleMidnight(context)
         val result = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -100,6 +111,30 @@ class SeyirWidget : AppWidgetProvider() {
     }
 
     companion object {
+        private const val MIDNIGHT_ACTION = "com.yusufcanmercan.weight_track_app.WIDGET_MIDNIGHT"
+
+        private fun midnightIntent(context: Context): PendingIntent = PendingIntent.getBroadcast(
+            context, 22, Intent(context, SeyirWidget::class.java).setAction(MIDNIGHT_ACTION),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+
+        /**
+         * Gün değişince "bu hafta" ve eğilim yeniden hesaplansın diye gece yarısından hemen sonrasına
+         * uyandırmayan bir alarm kurar. Telefon uykudaysa alarm ekran ilk açıldığında çalışır; kullanıcı
+         * bir şey yapmaz. Her güncellemede yeniden kurulur, yeniden başlatmada sistem widget'ı zaten günceller.
+         */
+        private fun scheduleMidnight(context: Context) {
+            val nextDay = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, 1)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 1)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            context.getSystemService(AlarmManager::class.java)
+                .set(AlarmManager.RTC, nextDay.timeInMillis, midnightIntent(context))
+        }
+
         fun canPin(context: Context): Boolean = Build.VERSION.SDK_INT >= 26 &&
             AppWidgetManager.getInstance(context).isRequestPinAppWidgetSupported
 

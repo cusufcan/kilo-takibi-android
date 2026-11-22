@@ -59,6 +59,8 @@ object WeeklyNotifications {
 
 class WeeklyNotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        // Saat, saat dilimi ya da yeniden başlatma günü değiştirmiş olabilir; widget da yenilensin.
+        if (intent.action != ALARM_ACTION) SeyirWidget.refresh(context)
         if (!WeeklyNotifications.isEnabled(context)) return
         WeeklyNotifications.schedule(context)
         if (intent.action != ALARM_ACTION || !WeeklyNotifications.hasPermission(context)) return
