@@ -13,8 +13,16 @@ class FakeWeightRepository(initial: List<Weight> = emptyList()) : WeightReposito
 
     override fun observeById(id: Long): Flow<Weight?> = rows.map { list -> list.find { it.id == id } }
 
-    override suspend fun add(weight: Weight) {
-        rows.value = rows.value + weight.copy(id = (rows.value.maxOfOrNull { it.id } ?: 0L) + 1)
+    override suspend fun add(weight: Weight): Long {
+        val id = (rows.value.maxOfOrNull { it.id } ?: 0L) + 1
+        rows.value = rows.value + weight.copy(id = id)
+        return id
+    }
+
+    override suspend fun hasMeasurements(): Boolean = rows.value.isNotEmpty()
+
+    override suspend fun addFirst(weight: Weight) {
+        if (rows.value.isEmpty()) add(weight)
     }
 
     override suspend fun update(weight: Weight) {

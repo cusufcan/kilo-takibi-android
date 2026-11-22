@@ -16,6 +16,8 @@ class FakeWeightDao : WeightDao {
 
     override fun observeById(id: Long): Flow<Weight?> = rows.map { list -> list.find { it.id == id } }
 
+    override suspend fun hasMeasurements(): Boolean = rows.value.isNotEmpty()
+
     override suspend fun insert(weight: Weight): Long {
         val saved = weight.copy(id = nextId++)
         rows.value = rows.value + saved

@@ -6,11 +6,11 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
- * Veri tabanı. v1 = eski 2.3.0 şeması (ADR-0002); v2 = `note` sütunu (ADR-0011).
+ * v1 eski 2.3.0 şeması, v2 not, v3 duygu ve ölçüm saatinin belirli olup olmadığı.
  * Yeni sütun gerekince version artar ve elle yazılmış Migration eklenir;
  * `fallbackToDestructiveMigration()` asla kullanılmaz.
  */
-@Database(entities = [Weight::class], version = 2, exportSchema = true)
+@Database(entities = [Weight::class], version = 3, exportSchema = true)
 abstract class WeightDatabase : RoomDatabase() {
     abstract fun weightDao(): WeightDao
 
@@ -22,6 +22,13 @@ abstract class WeightDatabase : RoomDatabase() {
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE Weight ADD COLUMN note TEXT")
+            }
+        }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE Weight ADD COLUMN mood TEXT")
+                db.execSQL("ALTER TABLE Weight ADD COLUMN hasMeasurementTime INTEGER NOT NULL DEFAULT 0")
             }
         }
     }

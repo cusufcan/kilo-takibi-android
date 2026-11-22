@@ -14,9 +14,11 @@ class WeightRepositoryImpl @Inject constructor(
 
     override fun observeById(id: Long): Flow<Weight?> = dao.observeById(id)
 
-    override suspend fun add(weight: Weight) {
-        dao.insert(weight)
-    }
+    override suspend fun add(weight: Weight): Long = dao.insert(weight)
+
+    override suspend fun hasMeasurements(): Boolean = dao.hasMeasurements()
+
+    override suspend fun addFirst(weight: Weight) = dao.insertFirst(weight)
 
     override suspend fun update(weight: Weight) = dao.update(weight)
 

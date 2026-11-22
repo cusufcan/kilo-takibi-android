@@ -14,7 +14,11 @@ interface WeightRepository {
     /** Tek kayıt; yoksa `null`. */
     fun observeById(id: Long): Flow<Weight?>
 
-    suspend fun add(weight: Weight)
+    suspend fun add(weight: Weight): Long
+
+    suspend fun hasMeasurements(): Boolean
+
+    suspend fun addFirst(weight: Weight)
 
     suspend fun update(weight: Weight)
 

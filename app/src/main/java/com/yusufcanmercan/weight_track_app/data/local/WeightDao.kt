@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
@@ -20,6 +21,14 @@ interface WeightDao {
     /** Eklenen satırın yeni `id`'sini döndürür. */
     @Insert
     suspend fun insert(weight: Weight): Long
+
+    @Query("SELECT EXISTS(SELECT 1 FROM Weight)")
+    suspend fun hasMeasurements(): Boolean
+
+    @Transaction
+    suspend fun insertFirst(weight: Weight) {
+        if (!hasMeasurements()) insert(weight)
+    }
 
     @Update
     suspend fun update(weight: Weight)

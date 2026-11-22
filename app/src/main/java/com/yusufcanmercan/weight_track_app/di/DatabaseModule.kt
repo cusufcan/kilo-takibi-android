@@ -20,7 +20,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): WeightDatabase =
         Room.databaseBuilder(context, WeightDatabase::class.java, WeightDatabase.NAME)
-            .addMigrations(WeightDatabase.MIGRATION_1_2)
+            .addMigrations(WeightDatabase.MIGRATION_1_2, WeightDatabase.MIGRATION_2_3)
             .build()
 
     @Provides
