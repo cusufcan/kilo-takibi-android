@@ -48,7 +48,8 @@ class HomeLogicTest {
             timeZone = utc,
         )
 
-        assertEquals(-0.890625, weeklySummary(state.dailyWeights, 10 * day).change!!, 1e-9)
+        // 82 → 81,5625 (2 gün) → 80,2781 (6 gün) → 79,9377 (2 gün); karşılaştırma 2. günün eğilimiyle.
+        assertEquals(-1.6248235702514648, weeklySummary(state.dailyWeights, 10 * day).change!!, 1e-9)
     }
 
     @Test
@@ -62,7 +63,8 @@ class HomeLogicTest {
         assertEquals(last, state.latest)
         assertEquals(listOf(0L, 4 * day), state.dailyWeights.map { it.dayMillis })
         assertEquals(76.0, state.dailyWeights.last().measuredKg, 1e-9)
-        assertEquals(79.0, state.dailyWeights.last().trendKg, 1e-9)
+        // 4 günlük arada ölçümün ağırlığı 1 − 0,75⁴.
+        assertEquals(77.265625, state.dailyWeights.last().trendKg, 1e-9)
     }
 
     @Test
@@ -153,5 +155,15 @@ class HomeLogicTest {
 
         assertEquals(0.125f, state.goal!!.progress, 1e-6f)
         assertEquals(calculateBmi(75.0, 175.0), state.bmi)
+    }
+
+    @Test
+    fun `ardisik gunlerde olcum agirligi ceyrektir uzun arada yeni olcume yaklasir`() {
+        val daily = buildHomeState(listOf(w(1, 80.0, 0), w(2, 76.0, 1)), timeZone = utc).dailyWeights
+        assertEquals(79.0, daily.last().trendKg, 1e-9)
+
+        val afterGap = buildHomeState(listOf(w(1, 80.0, 0), w(2, 78.0, 11)), timeZone = utc).dailyWeights
+        assertEquals(80.0 - 2 * (1 - Math.pow(0.75, 11.0)), afterGap.last().trendKg, 1e-9)
+        assertTrue(afterGap.last().trendKg < 78.1)
     }
 }
