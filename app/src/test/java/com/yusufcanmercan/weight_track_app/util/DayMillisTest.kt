@@ -31,4 +31,11 @@ class DayMillisTest {
     fun `seciciden gelen gun yerel gece yarisina doner`() {
         assertEquals(istanbulMidnight, fromPickerMillis(pickerNov18, istanbul))
     }
+
+    @Test
+    fun `sonraki gece yarisina kalan sure yerel gune gore hesaplanir`() {
+        // 15:30 İstanbul -> 8,5 saat
+        assertEquals(8L * 3_600_000L + 30L * 60_000L, millisUntilNextDay(afternoon, istanbul))
+        assertEquals(24L * 3_600_000L, millisUntilNextDay(istanbulMidnight, istanbul))
+    }
 }

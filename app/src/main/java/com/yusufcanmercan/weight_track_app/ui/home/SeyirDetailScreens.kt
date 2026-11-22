@@ -41,7 +41,6 @@ import com.yusufcanmercan.weight_track_app.ui.theme.SeyirEyebrow
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirIcon
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirIconTile
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirWeeklyValue
-import com.yusufcanmercan.weight_track_app.util.toPickerMillis
 import java.text.DateFormat
 import kotlin.math.abs
 import kotlinx.coroutines.launch
@@ -167,7 +166,8 @@ fun WeeklyScreen(state: HomeUiState, throughDay: Long?, onBack: () -> Unit) {
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
-    val end = throughDay ?: toPickerMillis(System.currentTimeMillis())
+    val today = rememberToday()
+    val end = throughDay ?: today
     val summary = remember(state.dailyWeights, end) { weeklySummary(state.dailyWeights, end) }
     val chart = remember(summary) { buildChartData(summary.days, period = summary.from..summary.to) }
     var notificationsEnabled by remember { mutableStateOf(WeeklyNotifications.isEnabled(context)) }

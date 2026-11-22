@@ -58,7 +58,7 @@ private val HistoryRowHeight = 64.dp
 
 @Composable
 fun HistoryScreen(state: HomeUiState, onEdit: (Long) -> Unit, onAdd: () -> Unit) {
-    val today = toPickerMillis(System.currentTimeMillis())
+    val today = rememberToday()
     var selectedMonth by rememberSaveable { mutableStateOf<Long?>(null) }
     var selectedDay by rememberSaveable { mutableStateOf<Long?>(null) }
     val latestMonth = firstOfMonth(maxOf(today, state.dailyWeights.lastOrNull()?.dayMillis ?: today))

@@ -34,3 +34,10 @@ private fun changeZone(millis: Long, from: TimeZone, to: TimeZone): Long {
         set(source[Calendar.YEAR], source[Calendar.MONTH], source[Calendar.DAY_OF_MONTH])
     }.timeInMillis
 }
+
+/** Verilen andan sonraki yerel gece yarısına kalan süre (ms). */
+fun millisUntilNextDay(millis: Long, zone: TimeZone = TimeZone.getDefault()): Long =
+    Calendar.getInstance(zone).apply {
+        timeInMillis = startOfDay(millis, zone)
+        add(Calendar.DAY_OF_YEAR, 1)
+    }.timeInMillis - millis

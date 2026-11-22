@@ -72,7 +72,6 @@ import com.yusufcanmercan.weight_track_app.ui.theme.SeyirEyebrow
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirHeroValue
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirIcon
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirIconTile
-import com.yusufcanmercan.weight_track_app.util.toPickerMillis
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -91,7 +90,7 @@ fun HomeScreen(
     onOpenMilestones: () -> Unit,
     onOpenWeekly: () -> Unit,
 ) {
-    val today = toPickerMillis(System.currentTimeMillis())
+    val today = rememberToday()
     val weekly = remember(state.dailyWeights, today) { weeklySummary(state.dailyWeights, today) }
     val chart = remember(weekly) { buildChartData(weekly.days, period = weekly.from..weekly.to) }
     val streak = remember(state.dailyWeights, today) { currentStreak(state.dailyWeights, today) }
