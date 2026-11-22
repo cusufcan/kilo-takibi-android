@@ -3,6 +3,7 @@ package com.yusufcanmercan.weight_track_app.ui.settings
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,9 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -22,7 +25,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,11 +52,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yusufcanmercan.weight_track_app.R
+import com.yusufcanmercan.weight_track_app.data.settings.DailyReminder
 import com.yusufcanmercan.weight_track_app.data.settings.ThemeMode
 import com.yusufcanmercan.weight_track_app.ui.home.ScreenTitle
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirIcon
 import com.yusufcanmercan.weight_track_app.ui.theme.Spacing
 import java.text.DecimalFormatSymbols
+import java.util.Calendar
 import java.util.Locale
 
 @Composable
@@ -73,6 +82,8 @@ fun SettingsScreen(
         onGoalSave = viewModel::onGoalSave,
         onHeightSave = viewModel::onHeightSave,
         onNameSave = viewModel::onNameSave,
+        onReminderEnabledChange = viewModel::onReminderEnabledChange,
+        onReminderTimeChange = viewModel::onReminderTimeChange,
         onBack = onBack,
         onLanguageChange = {
             language = it
@@ -152,6 +163,8 @@ private fun SettingsContent(
     onNameSave: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onReminderEnabledChange: (Boolean) -> Unit = {},
+    onReminderTimeChange: (Int, Int) -> Unit = { _, _ -> },
     profileContent: @Composable () -> Unit = {},
 ) {
     Column(
@@ -223,6 +236,7 @@ private fun SettingsContent(
                 }
             }
         }
+        ReminderSection(state.reminder, onReminderEnabledChange, onReminderTimeChange)
         Section(R.string.settings_theme) {
             ThemeMode.entries.forEachIndexed { i, mode ->
                 if (i > 0) Divider()
@@ -256,6 +270,75 @@ private fun SettingsContent(
             }
         }
         profileContent()
+    }
+}
+
+/** Günlük tartı hatırlatıcısı: aç/kapa, saat ve bildirim engelliyse uyarı (ADR-0040). */
+@Composable
+private fun ReminderSection(
+    reminder: DailyReminder,
+    onEnabledChange: (Boolean) -> Unit,
+    onTimeChange: (Int, Int) -> Unit,
+) {
+    val context = LocalContext.current
+    val notifications = rememberNotificationAccess()
+    var showTime by rememberSaveable { mutableStateOf(false) }
+    val is24Hour = android.text.format.DateFormat.is24HourFormat(context)
+    val timeText = remember(reminder.minuteOfDay, is24Hour) {
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, reminder.minuteOfDay / 60)
+            set(Calendar.MINUTE, reminder.minuteOfDay % 60)
+        }
+        android.text.format.DateFormat.getTimeFormat(context).format(calendar.time)
+    }
+    Section(R.string.settings_reminders) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .toggleable(reminder.enabled, role = Role.Switch) { notifications.change(it, onEnabledChange) }
+                .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+        ) {
+            Text(stringResource(R.string.reminder_toggle), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+            Switch(checked = reminder.enabled, onCheckedChange = null)
+        }
+        if (reminder.enabled) {
+            Divider()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button) { showTime = true }
+                    .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(stringResource(R.string.reminder_time), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                Text(timeText, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+            }
+            if (!notifications.allowed) NotificationsBlockedWarning(Modifier.padding(horizontal = Spacing.lg))
+        }
+        if (notifications.denied) {
+            Text(
+                stringResource(R.string.weekly_notification_denied),
+                modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+    if (showTime) {
+        val time = rememberTimePickerState(reminder.minuteOfDay / 60, reminder.minuteOfDay % 60, is24Hour)
+        AlertDialog(
+            onDismissRequest = { showTime = false },
+            title = { Text(stringResource(R.string.reminder_time)) },
+            text = { TimeInput(time) },
+            confirmButton = {
+                TextButton(onClick = {
+                    onTimeChange(time.hour, time.minute)
+                    showTime = false
+                }) { Text(stringResource(R.string.ok)) }
+            },
+            dismissButton = { TextButton(onClick = { showTime = false }) { Text(stringResource(R.string.cancel)) } },
+        )
     }
 }
 

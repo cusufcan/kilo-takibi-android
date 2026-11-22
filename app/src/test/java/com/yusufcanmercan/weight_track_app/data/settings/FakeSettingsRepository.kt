@@ -57,4 +57,11 @@ class FakeSettingsRepository(initial: ThemeMode = ThemeMode.SYSTEM, initialGoal:
     override suspend fun setWeeklySummaryEnabled(enabled: Boolean) {
         weekly.value = enabled
     }
+
+    private val reminder = MutableStateFlow(DailyReminder())
+    override val dailyReminder: Flow<DailyReminder> = reminder
+
+    override suspend fun setDailyReminder(reminder: DailyReminder) {
+        this.reminder.value = reminder
+    }
 }

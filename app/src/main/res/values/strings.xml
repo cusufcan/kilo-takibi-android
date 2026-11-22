@@ -196,4 +196,16 @@
     <string name="measurement_date">Measurement date</string>
     <string name="measurement_yesterday">Yesterday</string>
     <string name="note_hint">Add a short note</string>
+    <string name="settings_reminders">Reminders</string>
+    <string name="reminder_toggle">Daily weigh-in reminder</string>
+    <string name="reminder_time">Reminder time</string>
+    <string name="reminder_title">Time to weigh in</string>
+    <string name="reminder_body">Don’t forget to weigh yourself today.</string>
+    <plurals name="reminder_body_streak">
+        <item quantity="one">Keep your %d-day streak going.</item>
+        <item quantity="other">Keep your %d-day streak going.</item>
+    </plurals>
+    <string name="reminder_channel">Daily reminder</string>
+    <string name="notifications_blocked">Notifications are turned off for this app, so reminders won’t arrive.</string>
+    <string name="notifications_open_settings">Open notification settings</string>
 </resources>

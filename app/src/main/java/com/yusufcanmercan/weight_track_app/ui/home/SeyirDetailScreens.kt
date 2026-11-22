@@ -1,11 +1,7 @@
 package com.yusufcanmercan.weight_track_app.ui.home
 
-import android.Manifest
 import android.icu.text.DateIntervalFormat
 import android.icu.util.DateInterval
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -35,7 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.yusufcanmercan.weight_track_app.R
-import com.yusufcanmercan.weight_track_app.platform.WeeklyNotifications
+import com.yusufcanmercan.weight_track_app.ui.settings.NotificationsBlockedWarning
+import com.yusufcanmercan.weight_track_app.ui.settings.rememberNotificationAccess
 import com.yusufcanmercan.weight_track_app.ui.theme.Spacing
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirEyebrow
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirIcon
@@ -176,13 +173,9 @@ fun WeeklyScreen(
     val end = throughDay ?: today
     val summary = remember(state.dailyWeights, end) { weeklySummary(state.dailyWeights, end) }
     val chart = remember(summary) { buildChartData(summary.days, period = summary.from..summary.to) }
-    var permissionDenied by remember { mutableStateOf(false) }
     var shareError by remember { mutableStateOf(false) }
     var sharing by remember { mutableStateOf(false) }
-    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        permissionDenied = !granted
-        if (granted) onNotificationsChange(true)
-    }
+    val notifications = rememberNotificationAccess()
     val locale = LocalLocale.current.platformLocale
     val period = remember(summary.from, summary.to, locale) {
         DateIntervalFormat.getInstance("yMMMMd", locale).apply {
@@ -195,14 +188,7 @@ fun WeeklyScreen(
         ?: stringResource(if (summary.days.isEmpty()) R.string.weekly_no_measurements else R.string.home_week_no_data)
     val count = stringResource(R.string.weekly_count, summary.days.size, WEEK_DAYS)
     val reminderLabel = stringResource(R.string.weekly_notification_toggle)
-    fun changeReminder(enabled: Boolean) {
-        permissionDenied = false
-        if (enabled && Build.VERSION.SDK_INT >= 33 && !WeeklyNotifications.hasPermission(context)) {
-            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            onNotificationsChange(enabled)
-        }
-    }
+    fun changeReminder(enabled: Boolean) = notifications.change(enabled, onNotificationsChange)
     DetailColumn(R.string.weekly_summary, onBack, bottom = {
         Button(
             enabled = summary.days.isNotEmpty() && !sharing,
@@ -266,7 +252,8 @@ fun WeeklyScreen(
                 Switch(checked = notificationsEnabled, onCheckedChange = null)
             }
         }
-        if (permissionDenied) StatNote(stringResource(R.string.weekly_notification_denied))
+        if (notifications.denied) StatNote(stringResource(R.string.weekly_notification_denied))
+        if (notificationsEnabled && !notifications.allowed) NotificationsBlockedWarning()
         if (shareError) Text(stringResource(R.string.weekly_share_error), color = colors.error)
     }
 }

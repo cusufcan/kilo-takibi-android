@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.yusufcanmercan.weight_track_app.MainActivity
 import com.yusufcanmercan.weight_track_app.R
@@ -32,6 +33,10 @@ private const val SUMMARY_DAY = "summary_day"
 object WeeklyNotifications {
     fun hasPermission(context: Context): Boolean = Build.VERSION.SDK_INT < 33 ||
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+
+    /** İzin verilmiş olsa da kullanıcı bildirimleri sistem ayarından kapatmış olabilir. */
+    fun notificationsAllowed(context: Context): Boolean =
+        hasPermission(context) && NotificationManagerCompat.from(context).areNotificationsEnabled()
 
     /** Tercih ayarlardan okunur (ADR-0039); kapalıysa alarm ve görünen bildirim kaldırılır. */
     internal fun schedule(context: Context, enabled: Boolean) {
@@ -62,9 +67,11 @@ object WeeklyNotifications {
 /** Alıcıların ayar okuması gibi kısa işleri için; `goAsync` süresi içinde biter. */
 internal val receiverScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-@AndroidEntryPoint
-class WeeklyNotificationReceiver : BroadcastReceiver() {
+// Uzun biçim: Kotlin soyut `super.onReceive` çağrısına izin vermez, enjeksiyon Hilt_ tabanında olur.
+@AndroidEntryPoint(BroadcastReceiver::class)
+class WeeklyNotificationReceiver : Hilt_WeeklyNotificationReceiver() {
     @Inject lateinit var settings: SettingsRepository
+    @Inject lateinit var reminders: ReminderScheduler
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
@@ -73,9 +80,14 @@ class WeeklyNotificationReceiver : BroadcastReceiver() {
         val result = goAsync()
         receiverScope.launch {
             try {
+                if (intent.action != ALARM_ACTION) {
+                    // Yeniden başlatma, güncelleme ya da saat değişimi iki alarmı da siler veya kaydırır.
+                    reminders.sync()
+                    return@launch
+                }
                 val enabled = settings.weeklySummaryEnabled.first()
                 WeeklyNotifications.schedule(context, enabled)
-                if (enabled && intent.action == ALARM_ACTION && WeeklyNotifications.hasPermission(context)) show(context, intent)
+                if (enabled && WeeklyNotifications.hasPermission(context)) show(context, intent)
             } finally {
                 result.finish()
             }

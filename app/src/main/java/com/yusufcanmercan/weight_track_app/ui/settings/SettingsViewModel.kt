@@ -6,6 +6,7 @@ import com.yusufcanmercan.weight_track_app.data.export.writeWeightCsv
 import com.yusufcanmercan.weight_track_app.data.repository.WeightRepository
 import com.yusufcanmercan.weight_track_app.data.settings.SettingsRepository
 import com.yusufcanmercan.weight_track_app.data.settings.ThemeMode
+import com.yusufcanmercan.weight_track_app.data.settings.DailyReminder
 import com.yusufcanmercan.weight_track_app.platform.ReminderScheduler
 import com.yusufcanmercan.weight_track_app.ui.edit.EditWeightViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +32,7 @@ data class SettingsUiState(
     val heightCm: Double? = null,
     val displayName: String? = null,
     val weeklySummaryEnabled: Boolean = false,
+    val reminder: DailyReminder = DailyReminder(),
 )
 
 internal enum class SettingsField { GOAL, HEIGHT, NAME }
@@ -46,14 +48,17 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsUiState> = combine(
-        repository.themeMode, repository.goalWeight, repository.heightCm, repository.displayName,
-        repository.weeklySummaryEnabled,
-    ) { theme, goal, height, name, weekly ->
-        SettingsUiState(
-            isLoading = false, themeMode = theme, goalKg = goal, heightCm = height, displayName = name,
-            weeklySummaryEnabled = weekly,
-        )
-    }
+        combine(
+            repository.themeMode, repository.goalWeight, repository.heightCm, repository.displayName,
+            repository.weeklySummaryEnabled,
+        ) { theme, goal, height, name, weekly ->
+            SettingsUiState(
+                isLoading = false, themeMode = theme, goalKg = goal, heightCm = height, displayName = name,
+                weeklySummaryEnabled = weekly,
+            )
+        },
+        repository.dailyReminder,
+    ) { state, reminder -> state.copy(reminder = reminder) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
 
     private val _csvExportStatus = MutableStateFlow(CsvExportStatus.IDLE)
@@ -85,6 +90,17 @@ class SettingsViewModel @Inject constructor(
     fun onWeeklySummaryChange(enabled: Boolean) {
         viewModelScope.launch {
             repository.setWeeklySummaryEnabled(enabled)
+            reminders.sync()
+        }
+    }
+
+    fun onReminderEnabledChange(enabled: Boolean) = updateReminder { it.copy(enabled = enabled) }
+
+    fun onReminderTimeChange(hour: Int, minute: Int) = updateReminder { it.copy(minuteOfDay = hour * 60 + minute) }
+
+    private fun updateReminder(change: (DailyReminder) -> DailyReminder) {
+        viewModelScope.launch {
+            repository.setDailyReminder(change(repository.dailyReminder.first()))
             reminders.sync()
         }
     }

@@ -19,5 +19,6 @@ class AndroidReminderScheduler @Inject constructor(
 ) : ReminderScheduler {
     override suspend fun sync() {
         WeeklyNotifications.schedule(context, settings.weeklySummaryEnabled.first())
+        DailyReminders.schedule(context, settings.dailyReminder.first())
     }
 }

@@ -1,6 +1,7 @@
 package com.yusufcanmercan.weight_track_app.ui.settings
 
 import com.yusufcanmercan.weight_track_app.data.repository.FakeWeightRepository
+import com.yusufcanmercan.weight_track_app.data.settings.DailyReminder
 import com.yusufcanmercan.weight_track_app.data.settings.FakeSettingsRepository
 import com.yusufcanmercan.weight_track_app.data.settings.SettingsRepository
 import com.yusufcanmercan.weight_track_app.data.settings.ThemeMode
@@ -151,5 +152,22 @@ class SettingsViewModelTest {
 
         assertTrue(viewModel.uiState.value.weeklySummaryEnabled)
         assertEquals(1, scheduler.syncCount)
+    }
+
+    @Test
+    fun `gunluk hatirlatici varsayilan kapali 0800 acilinca ve saat degisince kaydedilip kurulur`() = runTest {
+        val scheduler = FakeReminderScheduler()
+        val viewModel = SettingsViewModel(FakeSettingsRepository(), FakeWeightRepository(), scheduler)
+        backgroundScope.launch { viewModel.uiState.collect {} }
+        runCurrent()
+        assertEquals(DailyReminder(enabled = false, minuteOfDay = 8 * 60), viewModel.uiState.value.reminder)
+
+        viewModel.onReminderEnabledChange(true)
+        runCurrent()
+        viewModel.onReminderTimeChange(21, 30)
+        runCurrent()
+
+        assertEquals(DailyReminder(enabled = true, minuteOfDay = 21 * 60 + 30), viewModel.uiState.value.reminder)
+        assertEquals(2, scheduler.syncCount)
     }
 }

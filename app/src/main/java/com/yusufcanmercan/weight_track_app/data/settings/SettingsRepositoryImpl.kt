@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.yusufcanmercan.weight_track_app.data.local.Weight
@@ -103,6 +104,20 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { it[WEEKLY_SUMMARY_KEY] = enabled }
     }
 
+    override val dailyReminder: Flow<DailyReminder> = prefs.map {
+        DailyReminder(
+            enabled = it[REMINDER_ENABLED] == true,
+            minuteOfDay = it[REMINDER_MINUTE]?.takeIf { minute -> minute in 0 until 24 * 60 } ?: DailyReminder.DEFAULT_MINUTE,
+        )
+    }
+
+    override suspend fun setDailyReminder(reminder: DailyReminder) {
+        dataStore.edit {
+            it[REMINDER_ENABLED] = reminder.enabled
+            it[REMINDER_MINUTE] = reminder.minuteOfDay
+        }
+    }
+
     private companion object {
         val THEME_KEY = stringPreferencesKey("theme_mode")
         val GOAL_KEY = doublePreferencesKey("goal_weight")
@@ -111,5 +126,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val PENDING_WEIGHT_KG = doublePreferencesKey("onboarding_weight_kg")
         val PENDING_WEIGHT_TIME = longPreferencesKey("onboarding_weight_time")
+        val REMINDER_ENABLED = booleanPreferencesKey("daily_reminder_enabled")
+        val REMINDER_MINUTE = intPreferencesKey("daily_reminder_minute")
     }
 }

@@ -192,4 +192,16 @@
     <string name="measurement_date">Ölçüm tarihi</string>
     <string name="measurement_yesterday">Dün</string>
     <string name="note_hint">Kısa bir not ekle</string>
+    <string name="settings_reminders">Hatırlatıcılar</string>
+    <string name="reminder_toggle">Günlük tartı hatırlatıcısı</string>
+    <string name="reminder_time">Hatırlatma saati</string>
+    <string name="reminder_title">Tartılma zamanı</string>
+    <string name="reminder_body">Bugün tartılmayı unutma.</string>
+    <plurals name="reminder_body_streak">
+        <item quantity="one">%d günlük serini bozma.</item>
+        <item quantity="other">%d günlük serini bozma.</item>
+    </plurals>
+    <string name="reminder_channel">Günlük hatırlatıcı</string>
+    <string name="notifications_blocked">Bu uygulamanın bildirimleri kapalı, hatırlatıcılar gelmeyecek.</string>
+    <string name="notifications_open_settings">Bildirim ayarlarını aç</string>
 </resources>
