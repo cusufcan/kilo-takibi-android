@@ -13,8 +13,7 @@ private const val LEGACY_WEEKLY_FILE = "weekly_notification"
 private const val LEGACY_WEEKLY_ENABLED = "enabled"
 
 /**
- * Haftalık özet tercihi eskiden ayrı bir SharedPreferences dosyasındaydı. İlk açılışta bir kez
- * DataStore'a taşınır, eski dosya silinir (ADR-0039).
+ * Eski SharedPreferences'taki haftalık özet tercihini bir kez DataStore'a taşır.
  */
 internal fun settingsMigrations(context: Context): List<DataMigration<Preferences>> = listOf(
     SharedPreferencesMigration(

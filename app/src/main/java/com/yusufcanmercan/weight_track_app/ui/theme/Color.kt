@@ -6,8 +6,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-// Marka rengi: eski uygulamanın moru #6200EE (ADR-0010, ADR-0018). Tüm renkler yalnız burada tanımlanır;
-// ekranlar hex yazmaz, MaterialTheme.colorScheme'den okur.
+// Tüm renkler burada; ekranlar MaterialTheme.colorScheme'den okur.
 private val Brand = Color(0xFF6200EE)
 
 val LightColors = lightColorScheme(
@@ -15,7 +14,6 @@ val LightColors = lightColorScheme(
     onPrimary = Color.White,
     primaryContainer = Color(0xFFEDDCFF),
     onPrimaryContainer = Color(0xFF22005D),
-    // secondary = pano "accent-tonal": aynı mor aileden destek tonu (ADR-0018).
     secondary = Color(0xFF7C6299),
     onSecondary = Color.White,
     secondaryContainer = Color(0xFFDECAF1),

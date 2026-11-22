@@ -1,6 +1,6 @@
 name: UI testleri
 
-# Emülatör yavaş ve ara sıra kararsız; her push'ta değil, elle başlatılır (ADR-0042).
+# Emülatör yavaş ve kararsız olabilir; elle başlatılır.
 on:
   workflow_dispatch:
 

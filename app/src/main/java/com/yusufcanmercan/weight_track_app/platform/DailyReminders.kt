@@ -61,7 +61,7 @@ object DailyReminders {
         val intent = Intent(context, DailyReminderReceiver::class.java).setAction(ALARM_ACTION)
         val pending = PendingIntent.getBroadcast(context, 12, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         if (reminder.enabled) {
-            // Kesin alarm izni istemiyoruz; Android birkaç dakika kaydırabilir (ADR-0040).
+            // Kesin alarm izni yok; Android birkaç dakika kaydırabilir.
             alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextReminderAt(System.currentTimeMillis(), reminder.minuteOfDay), pending)
         } else {
             alarms.cancel(pending)

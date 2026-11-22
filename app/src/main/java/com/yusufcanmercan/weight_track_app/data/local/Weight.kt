@@ -7,11 +7,8 @@ import com.yusufcanmercan.weight_track_app.util.startOfDay
 import java.util.TimeZone
 
 /**
- * Bir kilo kaydı = veri tabanında `Weight` tablosunun bir satırı.
- *
- * DİKKAT: tablo adı ve sütun adları (`id`, `weight`, `timeStamp`; `note` v2'de eklendi) eski 2.3.0 sürümüyle
- * birebir aynı kalmak zorunda; değişirse mevcut kullanıcıların verisi açılamaz (ADR-0002).
- * Bu yüzden `timeStamp`'in büyük S'si bilerek böyle.
+ * Bir kilo kaydı. Tablo ve sütun adları 2.3.0 ile aynı kalmalı (`timeStamp` dahil);
+ * değişirse mevcut kullanıcıların verisi açılamaz.
  */
 @Entity(tableName = "Weight")
 data class Weight(

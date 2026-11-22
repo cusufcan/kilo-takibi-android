@@ -21,9 +21,7 @@ import javax.inject.Inject
 import kotlin.math.roundToLong
 
 /**
- * Ekle/düzenle alt sayfasının ViewModel'i. Alt sayfa bir rota olmadığı için `id` rotadan gelmez;
- * sayfa her açıldığında `start(id)` çağrılır (ADR-0015). `id` null ise yeni kayıt (son kiloyla dolu),
- * değilse o kayıt Room'dan okunur (tek doğruluk kaynağı).
+ * Ekle/düzenle alt sayfası. Her açılışta `start(id)` çağrılır; `id` null ise yeni kayıt.
  */
 @HiltViewModel
 class EditWeightViewModel @Inject constructor(

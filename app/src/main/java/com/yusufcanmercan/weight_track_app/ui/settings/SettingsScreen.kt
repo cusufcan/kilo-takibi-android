@@ -392,7 +392,7 @@ private fun SettingsContent(
     }
 }
 
-/** Günlük tartı hatırlatıcısı: aç/kapa, saat ve bildirim engelliyse uyarı (ADR-0040). */
+/** Günlük tartı hatırlatıcısı ayarı. */
 @Composable
 private fun ReminderSection(
     reminder: DailyReminder,
@@ -461,7 +461,7 @@ private fun ReminderSection(
     }
 }
 
-/** Bölüm: üstte `titleMedium` başlık, altında nötr grup kutusu (tasarim.md). */
+/** Bölüm: `titleMedium` başlık ve altında grup kutusu. */
 @Composable
 private fun Section(titleRes: Int, content: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {

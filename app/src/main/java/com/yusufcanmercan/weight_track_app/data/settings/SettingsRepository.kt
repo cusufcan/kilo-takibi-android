@@ -3,7 +3,7 @@ package com.yusufcanmercan.weight_track_app.data.settings
 import com.yusufcanmercan.weight_track_app.data.local.Weight
 import kotlinx.coroutines.flow.Flow
 
-/** Günlük tartı hatırlatıcısı; saat gün içindeki dakika olarak tutulur (ADR-0040). */
+/** Günlük tartı hatırlatıcısı; saat gün içindeki dakika olarak tutulur. */
 data class DailyReminder(val enabled: Boolean = false, val minuteOfDay: Int = DEFAULT_MINUTE) {
     companion object {
         const val DEFAULT_MINUTE = 8 * 60
@@ -12,7 +12,7 @@ data class DailyReminder(val enabled: Boolean = false, val minuteOfDay: Int = DE
 
 data class OnboardingState(val completed: Boolean = false, val pendingWeight: Weight? = null)
 
-/** Kullanıcı ayarlarının tek giriş kapısı (ADR-0008). Dil burada değil: onu Android saklar. */
+/** Kullanıcı ayarları. Dili Android saklar. */
 interface SettingsRepository {
     val themeMode: Flow<ThemeMode>
 

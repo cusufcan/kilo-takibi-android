@@ -38,7 +38,7 @@ object WeeklyNotifications {
     fun notificationsAllowed(context: Context): Boolean =
         hasPermission(context) && NotificationManagerCompat.from(context).areNotificationsEnabled()
 
-    /** Tercih ayarlardan okunur (ADR-0039); kapalıysa alarm ve görünen bildirim kaldırılır. */
+    /** Tercih kapalıysa alarm ve bildirim kaldırılır. */
     internal fun schedule(context: Context, enabled: Boolean) {
         val alarms = context.getSystemService(AlarmManager::class.java)
         val now = System.currentTimeMillis()

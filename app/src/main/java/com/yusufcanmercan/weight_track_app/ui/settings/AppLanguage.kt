@@ -4,8 +4,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 
 /**
- * Uygulama dili seçenekleri. Seçimi Android saklar (ADR-0008); biz yalnız ayarlar ve okuruz.
- * [tag] = dil etiketi ("tr", "en"); SYSTEM = boş = telefonun dilini izle.
+ * Uygulama dili; seçimi Android saklar. SYSTEM (boş etiket) telefonun dilini izler.
  */
 enum class AppLanguage(val tag: String) {
     SYSTEM(""),

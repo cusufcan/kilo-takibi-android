@@ -12,9 +12,8 @@ private const val MEASUREMENT_WEIGHT = 0.25
 data class DailyWeight(val dayMillis: Long, val measuredKg: Double, val trendKg: Double)
 
 /**
- * Eskiden yeniye sıralı kayıtlardan her günün son ölçümüyle eğilimi hesaplar.
- * Ölçümün ağırlığı aradaki gün sayısıyla büyür: uzun aradan sonra eğilim yeni ölçüme hızla yaklaşır,
- * her gün tartılan kullanıcı için ağırlık [MEASUREMENT_WEIGHT] kalır (ADR-0038).
+ * Her günün son ölçümüyle eğilimi hesaplar. Ölçümün ağırlığı aradaki gün sayısıyla büyür;
+ * günlük tartılan için [MEASUREMENT_WEIGHT] kalır.
  */
 internal fun calculateDailyWeights(oldestFirst: List<Weight>, timeZone: TimeZone): List<DailyWeight> {
     val byDay = oldestFirst.associateBy { toPickerMillis(it.timeStamp, timeZone) }

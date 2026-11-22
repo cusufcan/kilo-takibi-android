@@ -204,7 +204,7 @@ fun HomeScreen(
 }
 
 /**
- * Yumuşak kart: kenarlıksız, iç dolgu `lg`. Vurgulu kart `primaryContainer` kullanır (ADR-0018).
+ * Kenarlıksız kart; vurgulu olan `primaryContainer` kullanır.
  */
 @Composable
 internal fun Card(

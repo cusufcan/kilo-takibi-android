@@ -11,7 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-/** Veri tabanı ve DAO'nun nasıl üretileceğini Hilt'e söyler. Context yalnız burada kullanılır (ADR-0003). */
+/** Veri tabanı ve DAO'yu Hilt'e sağlar. */
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {

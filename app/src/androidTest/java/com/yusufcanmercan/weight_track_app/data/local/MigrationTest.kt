@@ -15,10 +15,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Migration test altyapısı (ADR-0009). Room'un export ettiği şema dosyalarından (`app/schemas/`)
- * gerçek bir eski sürüm veri tabanı oluşturur, veri ekler, sonra güncel kodla açıp veri duruyor mu bakar.
- *
- * v1 → v3 tartıyı korur, v2 → v3 mevcut notu koruyup Seyir alanlarını ekler.
+ * Eski şema sürümlerinden (`app/schemas/`) veri tabanı kurar, güncel kodla açıp verinin korunduğunu doğrular.
  */
 @RunWith(AndroidJUnit4::class)
 class MigrationTest {

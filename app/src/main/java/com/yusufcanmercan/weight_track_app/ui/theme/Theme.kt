@@ -17,7 +17,7 @@ private val AppShapes = Shapes(
     extraLarge = RoundedCornerShape(28.dp),
 )
 
-/** Uygulama teması. [themeMode] SYSTEM ise telefonun açık/koyu ayarını izler. Renk sabit marka moru (ADR-0010). */
+/** Uygulama teması; [themeMode] SYSTEM ise telefonun ayarını izler. */
 @Composable
 fun KiloTakibiTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,

@@ -31,7 +31,7 @@ import com.yusufcanmercan.weight_track_app.platform.SeyirWidget
 import com.yusufcanmercan.weight_track_app.ui.theme.KiloTakibiTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-/** Uygulamanın tek Activity'si (ADR-0004). Tüm ekranlar bunun içinde Compose ile çizilir. */
+/** Tek Activity; tüm ekranlar Compose ile çizilir. */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()

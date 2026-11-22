@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.androidx.room)
 }
 
-// Room şema dosyalarını (JSON) buraya yazar; git'e girer, migration testleri bunlara dayanır (ADR-0002).
+// Room şema dosyaları; migration testleri bunlara dayanır.
 room {
     schemaDirectory("$projectDir/schemas")
 }
@@ -22,7 +22,7 @@ android {
         applicationId = "com.yusufcanmercan.weight_track_app"
         minSdk = 25
         targetSdk = 37
-        // Play'deki 2.3.0 = 23; yeni sürüm bundan büyük olmalı (ADR-0007). Her Play yüklemesinde artar.
+        // Play'deki 2.3.0 = 23; her yüklemede artar.
         versionCode = 24
         versionName = "3.0.0"
         testInstrumentationRunner = "com.yusufcanmercan.weight_track_app.HiltTestRunner"

@@ -5,7 +5,7 @@ import com.yusufcanmercan.weight_track_app.data.local.WeightDao
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-/** Repository'nin Room'lu gerçek hali. DAO'yu constructor'dan alır (ADR-0003). */
+/** Room tabanlı repository. */
 class WeightRepositoryImpl @Inject constructor(
     private val dao: WeightDao,
 ) : WeightRepository {

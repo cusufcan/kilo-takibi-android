@@ -23,7 +23,7 @@ class HomeViewModel @Inject constructor(
     settings: SettingsRepository,
 ) : ViewModel() {
 
-    /** Durum aşağı akar: Repository -> ViewModel -> ekran (ADR-0001). */
+    /** Ana sayfa durumu. */
     val uiState: StateFlow<HomeUiState> = flow {
         var previousWeights: List<Weight>? = null
         var previousZone: TimeZone? = null
