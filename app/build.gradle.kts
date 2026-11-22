@@ -23,8 +23,8 @@ android {
         minSdk = 25
         targetSdk = 37
         // Play'deki 2.3.0 = 23; her yüklemede artar.
-        versionCode = 24
-        versionName = "3.0.0"
+        versionCode = 25
+        versionName = "3.0.1"
         testInstrumentationRunner = "com.yusufcanmercan.weight_track_app.HiltTestRunner"
     }
 
