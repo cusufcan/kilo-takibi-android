@@ -6,6 +6,7 @@ import com.yusufcanmercan.weight_track_app.data.export.writeWeightCsv
 import com.yusufcanmercan.weight_track_app.data.repository.WeightRepository
 import com.yusufcanmercan.weight_track_app.data.settings.SettingsRepository
 import com.yusufcanmercan.weight_track_app.data.settings.ThemeMode
+import com.yusufcanmercan.weight_track_app.platform.ReminderScheduler
 import com.yusufcanmercan.weight_track_app.ui.edit.EditWeightViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
@@ -29,6 +30,7 @@ data class SettingsUiState(
     val goalKg: Double? = null,
     val heightCm: Double? = null,
     val displayName: String? = null,
+    val weeklySummaryEnabled: Boolean = false,
 )
 
 internal enum class SettingsField { GOAL, HEIGHT, NAME }
@@ -40,12 +42,17 @@ internal enum class CsvExportStatus { IDLE, WRITING, SAVED, FAILED }
 class SettingsViewModel @Inject constructor(
     private val repository: SettingsRepository,
     private val weightRepository: WeightRepository,
+    private val reminders: ReminderScheduler,
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsUiState> = combine(
         repository.themeMode, repository.goalWeight, repository.heightCm, repository.displayName,
-    ) { theme, goal, height, name ->
-        SettingsUiState(isLoading = false, themeMode = theme, goalKg = goal, heightCm = height, displayName = name)
+        repository.weeklySummaryEnabled,
+    ) { theme, goal, height, name, weekly ->
+        SettingsUiState(
+            isLoading = false, themeMode = theme, goalKg = goal, heightCm = height, displayName = name,
+            weeklySummaryEnabled = weekly,
+        )
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
 
@@ -72,6 +79,13 @@ class SettingsViewModel @Inject constructor(
             } catch (_: Exception) {
                 CsvExportStatus.FAILED
             }
+        }
+    }
+
+    fun onWeeklySummaryChange(enabled: Boolean) {
+        viewModelScope.launch {
+            repository.setWeeklySummaryEnabled(enabled)
+            reminders.sync()
         }
     }
 

@@ -3,6 +3,5 @@
 <full-backup-content>
     <include domain="database" path="." />
     <include domain="file" path="datastore/" />
-    <include domain="sharedpref" path="weekly_notification.xml" />
     <include domain="file" path="androidx.appcompat.app.AppCompatDelegate.application_locales_record_file" />
 </full-backup-content>

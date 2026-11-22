@@ -4,6 +4,7 @@ import com.yusufcanmercan.weight_track_app.data.repository.FakeWeightRepository
 import com.yusufcanmercan.weight_track_app.data.settings.FakeSettingsRepository
 import com.yusufcanmercan.weight_track_app.data.settings.SettingsRepository
 import com.yusufcanmercan.weight_track_app.data.settings.ThemeMode
+import com.yusufcanmercan.weight_track_app.platform.FakeReminderScheduler
 import com.yusufcanmercan.weight_track_app.ui.home.MainDispatcherRule
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,12 +26,12 @@ class SettingsViewModelTest {
 
     @Test
     fun `baslangicta yukleniyor durumundadir`() {
-        assertTrue(SettingsViewModel(FakeSettingsRepository(), FakeWeightRepository()).uiState.value.isLoading)
+        assertTrue(SettingsViewModel(FakeSettingsRepository(), FakeWeightRepository(), FakeReminderScheduler()).uiState.value.isLoading)
     }
 
     @Test
     fun `kayitli tema duruma yansir`() = runTest {
-        val viewModel = SettingsViewModel(FakeSettingsRepository(ThemeMode.DARK), FakeWeightRepository())
+        val viewModel = SettingsViewModel(FakeSettingsRepository(ThemeMode.DARK), FakeWeightRepository(), FakeReminderScheduler())
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
 
@@ -40,7 +41,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `tema degisince durum guncellenir`() = runTest {
-        val viewModel = SettingsViewModel(FakeSettingsRepository(), FakeWeightRepository())
+        val viewModel = SettingsViewModel(FakeSettingsRepository(), FakeWeightRepository(), FakeReminderScheduler())
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
 
@@ -51,7 +52,7 @@ class SettingsViewModelTest {
     }
 
     private fun TestScope.vm(repo: FakeSettingsRepository = FakeSettingsRepository()): SettingsViewModel {
-        val viewModel = SettingsViewModel(repo, FakeWeightRepository())
+        val viewModel = SettingsViewModel(repo, FakeWeightRepository(), FakeReminderScheduler())
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
         return viewModel
@@ -124,7 +125,7 @@ class SettingsViewModelTest {
                 stored.setGoalWeight(kg)
             }
         }
-        val viewModel = SettingsViewModel(repo, FakeWeightRepository())
+        val viewModel = SettingsViewModel(repo, FakeWeightRepository(), FakeReminderScheduler())
         backgroundScope.launch { viewModel.uiState.collect {} }
 
         viewModel.onGoalSave("74")
@@ -135,5 +136,20 @@ class SettingsViewModelTest {
 
         assertEquals(74.0, viewModel.uiState.value.goalKg)
         assertEquals(FieldSaveStatus.SAVED, viewModel.fieldStatus.value[SettingsField.GOAL])
+    }
+
+    @Test
+    fun `haftalik ozet acilinca kaydedilir ve alarm yeniden kurulur`() = runTest {
+        val scheduler = FakeReminderScheduler()
+        val viewModel = SettingsViewModel(FakeSettingsRepository(), FakeWeightRepository(), scheduler)
+        backgroundScope.launch { viewModel.uiState.collect {} }
+        runCurrent()
+        assertFalse(viewModel.uiState.value.weeklySummaryEnabled)
+
+        viewModel.onWeeklySummaryChange(true)
+        runCurrent()
+
+        assertTrue(viewModel.uiState.value.weeklySummaryEnabled)
+        assertEquals(1, scheduler.syncCount)
     }
 }

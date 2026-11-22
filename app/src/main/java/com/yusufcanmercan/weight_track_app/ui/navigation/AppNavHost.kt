@@ -55,6 +55,7 @@ import com.yusufcanmercan.weight_track_app.ui.edit.EditWeightSheet
 import com.yusufcanmercan.weight_track_app.ui.edit.EditWeightViewModel
 import com.yusufcanmercan.weight_track_app.ui.home.*
 import com.yusufcanmercan.weight_track_app.ui.settings.SettingsScreen
+import com.yusufcanmercan.weight_track_app.ui.settings.SettingsViewModel
 import com.yusufcanmercan.weight_track_app.ui.theme.Spacing
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirTab
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirTabIndicatorHeight
@@ -272,7 +273,14 @@ fun AppNavHost(
             }
             composable<Weekly> { entry ->
                 Box(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
-                    WeeklyScreen(state, entry.toRoute<Weekly>().throughDay.takeUnless { it == 0L }) { nav.popBackStack() }
+                    val settingsViewModel: SettingsViewModel = hiltViewModel()
+                    val settings by settingsViewModel.uiState.collectAsStateWithLifecycle()
+                    WeeklyScreen(
+                        state,
+                        throughDay = entry.toRoute<Weekly>().throughDay.takeUnless { it == 0L },
+                        notificationsEnabled = settings.weeklySummaryEnabled,
+                        onNotificationsChange = settingsViewModel::onWeeklySummaryChange,
+                    ) { nav.popBackStack() }
                 }
             }
         }

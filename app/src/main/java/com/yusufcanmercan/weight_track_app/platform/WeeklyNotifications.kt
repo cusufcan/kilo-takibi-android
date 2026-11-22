@@ -12,31 +12,29 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import com.yusufcanmercan.weight_track_app.MainActivity
 import com.yusufcanmercan.weight_track_app.R
+import com.yusufcanmercan.weight_track_app.data.settings.SettingsRepository
 import com.yusufcanmercan.weight_track_app.util.toPickerMillis
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
+import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 private const val CHANNEL_ID = "weekly_summary"
 private const val ALARM_ACTION = "com.yusufcanmercan.weight_track_app.WEEKLY_ALARM"
 private const val SUMMARY_DAY = "summary_day"
 
 object WeeklyNotifications {
-    private fun settings(context: Context) = context.getSharedPreferences("weekly_notification", Context.MODE_PRIVATE)
-
-    fun isEnabled(context: Context) = settings(context).getBoolean("enabled", false)
-
     fun hasPermission(context: Context): Boolean = Build.VERSION.SDK_INT < 33 ||
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
-    fun setEnabled(context: Context, enabled: Boolean) {
-        settings(context).edit { putBoolean("enabled", enabled) }
-        schedule(context)
-        if (!enabled) context.getSystemService(NotificationManager::class.java).cancel(1)
-    }
-
-    internal fun schedule(context: Context) {
+    /** Tercih ayarlardan okunur (ADR-0039); kapalıysa alarm ve görünen bildirim kaldırılır. */
+    internal fun schedule(context: Context, enabled: Boolean) {
         val alarms = context.getSystemService(AlarmManager::class.java)
         val now = System.currentTimeMillis()
         val monday = Calendar.getInstance().apply {
@@ -52,18 +50,39 @@ object WeeklyNotifications {
         val intent = Intent(context, WeeklyNotificationReceiver::class.java).setAction(ALARM_ACTION)
             .putExtra(SUMMARY_DAY, toPickerMillis(sunday.timeInMillis))
         val pending = PendingIntent.getBroadcast(context, 10, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        if (isEnabled(context)) alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, monday.timeInMillis, pending)
-        else alarms.cancel(pending)
+        if (enabled) {
+            alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, monday.timeInMillis, pending)
+        } else {
+            alarms.cancel(pending)
+            context.getSystemService(NotificationManager::class.java).cancel(1)
+        }
     }
 }
 
+/** Alıcıların ayar okuması gibi kısa işleri için; `goAsync` süresi içinde biter. */
+internal val receiverScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+@AndroidEntryPoint
 class WeeklyNotificationReceiver : BroadcastReceiver() {
+    @Inject lateinit var settings: SettingsRepository
+
     override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
         // Saat, saat dilimi ya da yeniden başlatma günü değiştirmiş olabilir; widget da yenilensin.
         if (intent.action != ALARM_ACTION) SeyirWidget.refresh(context)
-        if (!WeeklyNotifications.isEnabled(context)) return
-        WeeklyNotifications.schedule(context)
-        if (intent.action != ALARM_ACTION || !WeeklyNotifications.hasPermission(context)) return
+        val result = goAsync()
+        receiverScope.launch {
+            try {
+                val enabled = settings.weeklySummaryEnabled.first()
+                WeeklyNotifications.schedule(context, enabled)
+                if (enabled && intent.action == ALARM_ACTION && WeeklyNotifications.hasPermission(context)) show(context, intent)
+            } finally {
+                result.finish()
+            }
+        }
+    }
+
+    private fun show(context: Context, intent: Intent) {
         val manager = context.getSystemService(NotificationManager::class.java)
         if (Build.VERSION.SDK_INT >= 26) {
             manager.createNotificationChannel(

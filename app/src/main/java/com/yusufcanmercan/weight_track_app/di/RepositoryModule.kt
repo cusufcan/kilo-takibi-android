@@ -4,6 +4,8 @@ import com.yusufcanmercan.weight_track_app.data.repository.WeightRepository
 import com.yusufcanmercan.weight_track_app.data.repository.WeightRepositoryImpl
 import com.yusufcanmercan.weight_track_app.data.settings.SettingsRepository
 import com.yusufcanmercan.weight_track_app.data.settings.SettingsRepositoryImpl
+import com.yusufcanmercan.weight_track_app.platform.AndroidReminderScheduler
+import com.yusufcanmercan.weight_track_app.platform.ReminderScheduler
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -19,4 +21,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindSettingsRepository(impl: SettingsRepositoryImpl): SettingsRepository
+
+    @Binds
+    abstract fun bindReminderScheduler(impl: AndroidReminderScheduler): ReminderScheduler
 }

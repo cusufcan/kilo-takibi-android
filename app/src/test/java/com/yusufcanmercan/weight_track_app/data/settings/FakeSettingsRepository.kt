@@ -50,4 +50,11 @@ class FakeSettingsRepository(initial: ThemeMode = ThemeMode.SYSTEM, initialGoal:
     override suspend fun completeOnboarding() {
         onboardingState.value = OnboardingState(completed = true)
     }
+
+    private val weekly = MutableStateFlow(false)
+    override val weeklySummaryEnabled: Flow<Boolean> = weekly
+
+    override suspend fun setWeeklySummaryEnabled(enabled: Boolean) {
+        weekly.value = enabled
+    }
 }

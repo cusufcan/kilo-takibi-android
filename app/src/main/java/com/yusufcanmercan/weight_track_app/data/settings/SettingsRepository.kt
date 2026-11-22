@@ -31,4 +31,9 @@ interface SettingsRepository {
     suspend fun saveOnboarding(name: String?, heightCm: Double?, goalKg: Double?, firstWeight: Weight?): Weight?
 
     suspend fun completeOnboarding()
+
+    /** Pazartesi akşamı haftalık özet bildirimi; varsayılan kapalı. */
+    val weeklySummaryEnabled: Flow<Boolean>
+
+    suspend fun setWeeklySummaryEnabled(enabled: Boolean)
 }

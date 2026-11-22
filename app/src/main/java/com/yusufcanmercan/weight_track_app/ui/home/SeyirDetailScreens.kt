@@ -162,7 +162,13 @@ fun MilestonesScreen(state: HomeUiState, onBack: () -> Unit, onSettings: () -> U
 }
 
 @Composable
-fun WeeklyScreen(state: HomeUiState, throughDay: Long?, onBack: () -> Unit) {
+fun WeeklyScreen(
+    state: HomeUiState,
+    throughDay: Long?,
+    notificationsEnabled: Boolean,
+    onNotificationsChange: (Boolean) -> Unit,
+    onBack: () -> Unit,
+) {
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
@@ -170,16 +176,12 @@ fun WeeklyScreen(state: HomeUiState, throughDay: Long?, onBack: () -> Unit) {
     val end = throughDay ?: today
     val summary = remember(state.dailyWeights, end) { weeklySummary(state.dailyWeights, end) }
     val chart = remember(summary) { buildChartData(summary.days, period = summary.from..summary.to) }
-    var notificationsEnabled by remember { mutableStateOf(WeeklyNotifications.isEnabled(context)) }
     var permissionDenied by remember { mutableStateOf(false) }
     var shareError by remember { mutableStateOf(false) }
     var sharing by remember { mutableStateOf(false) }
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         permissionDenied = !granted
-        if (granted) {
-            WeeklyNotifications.setEnabled(context, true)
-            notificationsEnabled = true
-        }
+        if (granted) onNotificationsChange(true)
     }
     val locale = LocalLocale.current.platformLocale
     val period = remember(summary.from, summary.to, locale) {
@@ -198,8 +200,7 @@ fun WeeklyScreen(state: HomeUiState, throughDay: Long?, onBack: () -> Unit) {
         if (enabled && Build.VERSION.SDK_INT >= 33 && !WeeklyNotifications.hasPermission(context)) {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            WeeklyNotifications.setEnabled(context, enabled)
-            notificationsEnabled = enabled
+            onNotificationsChange(enabled)
         }
     }
     DetailColumn(R.string.weekly_summary, onBack, bottom = {

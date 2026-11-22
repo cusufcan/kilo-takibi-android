@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
+import com.yusufcanmercan.weight_track_app.data.settings.settingsMigrations
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +19,7 @@ import javax.inject.Singleton
 private val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(
     name = "settings",
     corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
+    produceMigrations = ::settingsMigrations,
 )
 
 @Module

@@ -97,6 +97,12 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override val weeklySummaryEnabled: Flow<Boolean> = prefs.map { it[WEEKLY_SUMMARY_KEY] == true }
+
+    override suspend fun setWeeklySummaryEnabled(enabled: Boolean) {
+        dataStore.edit { it[WEEKLY_SUMMARY_KEY] = enabled }
+    }
+
     private companion object {
         val THEME_KEY = stringPreferencesKey("theme_mode")
         val GOAL_KEY = doublePreferencesKey("goal_weight")
