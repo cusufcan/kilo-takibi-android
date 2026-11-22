@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Tartının ikon ve açılış ekranında kullanılan ortak 24 × 24 çizimi. -->
-    <string name="seyir_scale_body_path" translatable="false">M12,3 a9,9 0 1,1 0,18 a9,9 0 1,1 0,-18 Z</string>
-    <string name="seyir_scale_display_path" translatable="false">M9.2,6.8 H14.8 A1.9,1.9 0 0,1 16.7,8.7 V9.3 A1.9,1.9 0 0,1 14.8,11.2 H9.2 A1.9,1.9 0 0,1 7.3,9.3 V8.7 A1.9,1.9 0 0,1 9.2,6.8 Z</string>
-    <string name="seyir_scale_digit_path" translatable="false">M10.8,9 H13.2</string>
-</resources>
