@@ -3,6 +3,8 @@ package com.yusufcanmercan.weight_track_app.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.Module
 import dagger.Provides
@@ -12,7 +14,11 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 // Dosya başına tek DataStore örneği olmalı; bu temsilci bunu garanti eder.
-private val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+// Bozuk dosya boş ayarlarla değiştirilir; yoksa her okuma ve yazma hata verirdi.
+private val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(
+    name = "settings",
+    corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
+)
 
 @Module
 @InstallIn(SingletonComponent::class)

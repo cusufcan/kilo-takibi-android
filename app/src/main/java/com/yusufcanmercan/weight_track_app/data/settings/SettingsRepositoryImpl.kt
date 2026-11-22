@@ -5,11 +5,14 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.yusufcanmercan.weight_track_app.data.local.Weight
+import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
 /** Ayarları DataStore'da (anahtar-değer deposu) tutar. */
@@ -17,7 +20,15 @@ class SettingsRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) : SettingsRepository {
 
-    override val themeMode: Flow<ThemeMode> = dataStore.data.map { prefs ->
+    /**
+     * Dosya okunamazsa (disk hatası, bozuk dosya) uygulama çökmez; ayarlar varsayılanlarıyla gelir.
+     * Programlama hataları yine fırlatılır.
+     */
+    private val prefs: Flow<Preferences> = dataStore.data.catch { error ->
+        if (error is IOException) emit(emptyPreferences()) else throw error
+    }
+
+    override val themeMode: Flow<ThemeMode> = prefs.map { prefs ->
         // Kayıt yoksa ya da bozuksa çökmek yerine SYSTEM'e dön.
         ThemeMode.entries.firstOrNull { it.name == prefs[THEME_KEY] } ?: ThemeMode.SYSTEM
     }
@@ -26,25 +37,25 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { it[THEME_KEY] = mode.name }
     }
 
-    override val goalWeight: Flow<Double?> = dataStore.data.map { it[GOAL_KEY] }
+    override val goalWeight: Flow<Double?> = prefs.map { it[GOAL_KEY] }
 
     override suspend fun setGoalWeight(kg: Double?) {
         dataStore.edit { if (kg == null) it.remove(GOAL_KEY) else it[GOAL_KEY] = kg }
     }
 
-    override val heightCm: Flow<Double?> = dataStore.data.map { it[HEIGHT_KEY] }
+    override val heightCm: Flow<Double?> = prefs.map { it[HEIGHT_KEY] }
 
     override suspend fun setHeightCm(cm: Double?) {
         dataStore.edit { if (cm == null) it.remove(HEIGHT_KEY) else it[HEIGHT_KEY] = cm }
     }
 
-    override val displayName: Flow<String?> = dataStore.data.map { it[DISPLAY_NAME_KEY] }
+    override val displayName: Flow<String?> = prefs.map { it[DISPLAY_NAME_KEY] }
 
     override suspend fun setDisplayName(name: String?) {
         dataStore.edit { if (name == null) it.remove(DISPLAY_NAME_KEY) else it[DISPLAY_NAME_KEY] = name }
     }
 
-    override val onboarding: Flow<OnboardingState> = dataStore.data.map { prefs ->
+    override val onboarding: Flow<OnboardingState> = prefs.map { prefs ->
         OnboardingState(
             completed = prefs[ONBOARDING_COMPLETED] == true,
             pendingWeight = prefs.pendingWeight(),
