@@ -28,7 +28,11 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8: kullanılmayan kodu ve kaynağı atar, APK küçülür. Room, Hilt, serialization
+            // kendi kurallarını kütüphaneyle getirir; ek kural proguard-rules.pro'da.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
