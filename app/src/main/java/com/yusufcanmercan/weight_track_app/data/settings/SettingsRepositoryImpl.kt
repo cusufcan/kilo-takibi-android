@@ -2,9 +2,12 @@ package com.yusufcanmercan.weight_track_app.data.settings
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.yusufcanmercan.weight_track_app.data.local.Weight
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -35,9 +38,61 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { if (cm == null) it.remove(HEIGHT_KEY) else it[HEIGHT_KEY] = cm }
     }
 
+    override val displayName: Flow<String?> = dataStore.data.map { it[DISPLAY_NAME_KEY] }
+
+    override suspend fun setDisplayName(name: String?) {
+        dataStore.edit { if (name == null) it.remove(DISPLAY_NAME_KEY) else it[DISPLAY_NAME_KEY] = name }
+    }
+
+    override val onboarding: Flow<OnboardingState> = dataStore.data.map { prefs ->
+        OnboardingState(
+            completed = prefs[ONBOARDING_COMPLETED] == true,
+            pendingWeight = prefs.pendingWeight(),
+        )
+    }
+
+    override suspend fun saveOnboarding(
+        name: String?,
+        heightCm: Double?,
+        goalKg: Double?,
+        firstWeight: Weight?,
+    ): Weight? {
+        val stored = dataStore.edit { prefs ->
+            if (prefs[ONBOARDING_COMPLETED] == true || prefs.pendingWeight() != null) return@edit
+            if (name != null) prefs[DISPLAY_NAME_KEY] = name
+            if (heightCm != null) prefs[HEIGHT_KEY] = heightCm
+            if (goalKg != null) prefs[GOAL_KEY] = goalKg
+            if (firstWeight == null) {
+                prefs[ONBOARDING_COMPLETED] = true
+            } else {
+                prefs[PENDING_WEIGHT_KG] = firstWeight.weight
+                prefs[PENDING_WEIGHT_TIME] = firstWeight.timeStamp
+            }
+        }
+        return stored.pendingWeight()
+    }
+
+    private fun Preferences.pendingWeight(): Weight? {
+        val kg = this[PENDING_WEIGHT_KG] ?: return null
+        val time = this[PENDING_WEIGHT_TIME] ?: return null
+        return Weight(weight = kg, timeStamp = time, hasMeasurementTime = true)
+    }
+
+    override suspend fun completeOnboarding() {
+        dataStore.edit { prefs ->
+            prefs[ONBOARDING_COMPLETED] = true
+            prefs.remove(PENDING_WEIGHT_KG)
+            prefs.remove(PENDING_WEIGHT_TIME)
+        }
+    }
+
     private companion object {
         val THEME_KEY = stringPreferencesKey("theme_mode")
         val GOAL_KEY = doublePreferencesKey("goal_weight")
         val HEIGHT_KEY = doublePreferencesKey("height_cm")
+        val DISPLAY_NAME_KEY = stringPreferencesKey("display_name")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val PENDING_WEIGHT_KG = doublePreferencesKey("onboarding_weight_kg")
+        val PENDING_WEIGHT_TIME = longPreferencesKey("onboarding_weight_time")
     }
 }
