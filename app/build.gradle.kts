@@ -14,12 +14,14 @@ room {
 
 android {
     namespace = "com.yusufcanmercan.weight_track_app"
-    compileSdk = 37
+    compileSdk {
+        version = release(37) { minorApiLevel = 1 }
+    }
 
     defaultConfig {
         applicationId = "com.yusufcanmercan.weight_track_app"
         minSdk = 25
-        targetSdk = 36
+        targetSdk = 37
         // Play'deki 2.3.0 = 23; yeni sürüm bundan büyük olmalı (ADR-0007). Her Play yüklemesinde artar.
         versionCode = 24
         versionName = "3.0.0"
