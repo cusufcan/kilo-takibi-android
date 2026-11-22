@@ -1,0 +1,60 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_surface_dark"
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/widget_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="@string/home_trend_weight"
+        android:textColor="#EDDCFF"
+        android:textSize="12sp"
+        android:fontFamily="@font/seyir_bold"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/widget_weight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:text="@string/empty_value"
+        android:textColor="#EDDCFF"
+        android:textSize="34sp"
+        android:fontFamily="@font/seyir_bold"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/widget_change"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="2dp"
+        android:background="@drawable/widget_badge_dark"
+        android:textColor="#CDC2D8"
+        android:textSize="11sp"/>
+
+    <TextView
+        android:id="@+id/widget_add"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:minHeight="32dp"
+        android:gravity="center"
+        android:background="@drawable/widget_add_dark"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="@string/widget_add"
+        android:textColor="#EDDCFF"
+        android:textSize="12sp"
+        android:fontFamily="@font/seyir_bold"
+        android:textStyle="bold"/>
+</LinearLayout>
