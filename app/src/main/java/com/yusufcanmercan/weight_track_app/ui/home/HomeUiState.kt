@@ -19,10 +19,10 @@ data class HomeUiState(
     val isLoading: Boolean = true,
     /** En yeni kayıt en üstte. */
     val items: List<HomeItem> = emptyList(),
-    /** Güncel kilo kartı için son kayıt; kayıt yoksa `null`. */
+    /** Son tartı; kayıt yoksa `null`. */
     val latest: Weight? = null,
-    /** Son kayıt eksi en az 7 gün öncesindeki kayıt (kg); karşılaştıracak kayıt yoksa `null`. */
-    val weeklyChange: Double? = null,
+    /** Grafik ve Bugün kartı aynı eğilimi kullanır. Günler eskiden yeniye sıralıdır. */
+    val dailyWeights: List<DailyWeight> = emptyList(),
     /** Geçmiş listesi için aylara gruplu satırlar; en yeni ay üstte. */
     val months: List<MonthGroup> = emptyList(),
     /** Hedef konmadıysa veya kayıt yoksa `null`. */
@@ -31,4 +31,5 @@ data class HomeUiState(
     val bmi: Bmi? = null,
     /** Boy girilmiş mi (kart, BMI yoksa ipucu göstersin diye). */
     val hasHeight: Boolean = false,
+    val heightCm: Double? = null,
 )

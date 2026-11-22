@@ -11,3 +11,18 @@ data object Home
 
 @Serializable
 data object Settings
+
+@Serializable
+data object Progress
+
+@Serializable
+data object History
+
+@Serializable
+data object Profile
+
+@Serializable
+data object Milestones
+
+@Serializable
+data class Weekly(val throughDay: Long = 0L)

@@ -13,6 +13,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.util.Locale
+import java.util.Calendar
 
 class EditWeightViewModelTest {
 
@@ -38,6 +39,25 @@ class EditWeightViewModelTest {
 
         assertEquals(80.5, repo.observeAll().first().single().weight, 0.0)
         assertTrue(viewModel.uiState.value.saved)
+    }
+
+    @Test
+    fun `yeni kayit saati ve duyguyu saklar ve ayni kaydi iki kez eklemez`() = runTest {
+        val repo = FakeWeightRepository()
+        val viewModel = EditWeightViewModel(repo).apply { start(null) }
+
+        viewModel.onRulerChange(76.14)
+        viewModel.onTimeChange(0, 0)
+        viewModel.onMoodChange(EntryMood.CALM)
+        viewModel.onSave()
+        viewModel.onSave()
+
+        val saved = repo.observeAll().first().single()
+        assertEquals(76.1, saved.weight, 0.0)
+        assertEquals("CALM", saved.mood)
+        assertTrue(saved.hasMeasurementTime)
+        assertEquals(0, Calendar.getInstance().apply { timeInMillis = saved.timeStamp }[Calendar.HOUR_OF_DAY])
+        assertEquals(saved.id, viewModel.uiState.value.savedEntryId)
     }
 
     @Test
