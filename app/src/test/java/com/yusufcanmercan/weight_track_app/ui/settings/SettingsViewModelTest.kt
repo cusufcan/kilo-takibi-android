@@ -1,8 +1,11 @@
 package com.yusufcanmercan.weight_track_app.ui.settings
 
+import com.yusufcanmercan.weight_track_app.data.repository.FakeWeightRepository
 import com.yusufcanmercan.weight_track_app.data.settings.FakeSettingsRepository
+import com.yusufcanmercan.weight_track_app.data.settings.SettingsRepository
 import com.yusufcanmercan.weight_track_app.data.settings.ThemeMode
 import com.yusufcanmercan.weight_track_app.ui.home.MainDispatcherRule
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -22,12 +25,12 @@ class SettingsViewModelTest {
 
     @Test
     fun `baslangicta yukleniyor durumundadir`() {
-        assertTrue(SettingsViewModel(FakeSettingsRepository()).uiState.value.isLoading)
+        assertTrue(SettingsViewModel(FakeSettingsRepository(), FakeWeightRepository()).uiState.value.isLoading)
     }
 
     @Test
     fun `kayitli tema duruma yansir`() = runTest {
-        val viewModel = SettingsViewModel(FakeSettingsRepository(ThemeMode.DARK))
+        val viewModel = SettingsViewModel(FakeSettingsRepository(ThemeMode.DARK), FakeWeightRepository())
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
 
@@ -37,7 +40,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `tema degisince durum guncellenir`() = runTest {
-        val viewModel = SettingsViewModel(FakeSettingsRepository())
+        val viewModel = SettingsViewModel(FakeSettingsRepository(), FakeWeightRepository())
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
 
@@ -48,7 +51,7 @@ class SettingsViewModelTest {
     }
 
     private fun TestScope.vm(repo: FakeSettingsRepository = FakeSettingsRepository()): SettingsViewModel {
-        val viewModel = SettingsViewModel(repo)
+        val viewModel = SettingsViewModel(repo, FakeWeightRepository())
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
         return viewModel
@@ -109,5 +112,28 @@ class SettingsViewModelTest {
         runCurrent()
 
         assertEquals(170.0, viewModel.uiState.value.heightCm)
+    }
+
+    @Test
+    fun `ayar yazilirken tekrar kaydedilmez ve basari yazma sonunda gorunur`() = runTest {
+        val stored = FakeSettingsRepository()
+        val mayFinish = CompletableDeferred<Unit>()
+        val repo = object : SettingsRepository by stored {
+            override suspend fun setGoalWeight(kg: Double?) {
+                mayFinish.await()
+                stored.setGoalWeight(kg)
+            }
+        }
+        val viewModel = SettingsViewModel(repo, FakeWeightRepository())
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.onGoalSave("74")
+        viewModel.onGoalSave("76")
+        assertEquals(FieldSaveStatus.WRITING, viewModel.fieldStatus.value[SettingsField.GOAL])
+        mayFinish.complete(Unit)
+        runCurrent()
+
+        assertEquals(74.0, viewModel.uiState.value.goalKg)
+        assertEquals(FieldSaveStatus.SAVED, viewModel.fieldStatus.value[SettingsField.GOAL])
     }
 }
