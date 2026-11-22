@@ -4,7 +4,8 @@ import com.yusufcanmercan.weight_track_app.data.local.Weight
 import java.util.Calendar
 import java.util.TimeZone
 
-private const val WEEK_MS = 7 * 24 * 60 * 60 * 1000L
+internal fun List<Weight>.sortedByMeasurementTime(): List<Weight> =
+    sortedWith(compareBy(Weight::timeStamp, Weight::id))
 
 /**
  * Satırları yerel takvim ayına göre gruplar; gelen sıra korunur (en yeni üstte gelir, en yeni ay üstte kalır).
@@ -24,23 +25,38 @@ fun groupByMonth(items: List<HomeItem>, timeZone: TimeZone = TimeZone.getDefault
  * Kayıtlardan ana sayfa durumunu üretir. Android'e bağlı değil, yalnız hesap; düz birim testle doğrulanır.
  * Sıra repository'den gelene güvenmez, tarihe göre kendisi sıralar.
  */
-fun buildHomeState(weights: List<Weight>, goalKg: Double? = null, heightCm: Double? = null): HomeUiState {
-    val oldestFirst = weights.sortedBy { it.timeStamp }
+fun buildHomeState(
+    weights: List<Weight>,
+    goalKg: Double? = null,
+    heightCm: Double? = null,
+    timeZone: TimeZone = TimeZone.getDefault(),
+): HomeUiState {
+    val oldestFirst = weights.sortedByMeasurementTime()
     val latest = oldestFirst.lastOrNull()
     val items = oldestFirst.mapIndexed { index, weight ->
         HomeItem(weight, change = oldestFirst.getOrNull(index - 1)?.let { weight.weight - it.weight })
     }.asReversed()
-    // Geçen hafta karşılaştırması: son kayıttan en az 7 gün önceki en yeni kayıt.
-    val weekAgo = latest?.let { l -> oldestFirst.lastOrNull { it.timeStamp <= l.timeStamp - WEEK_MS } }
+    val dailyWeights = calculateDailyWeights(oldestFirst, timeZone)
     return HomeUiState(
         isLoading = false,
         items = items,
         latest = latest,
-        weeklyChange = if (latest != null && weekAgo != null) latest.weight - weekAgo.weight else null,
-        months = groupByMonth(items),
-        bmi = if (heightCm != null && latest != null) calculateBmi(latest.weight, heightCm) else null,
+        dailyWeights = dailyWeights,
+        months = groupByMonth(items, timeZone),
+    ).withMeasurementSettings(goalKg, heightCm)
+}
+
+internal fun HomeUiState.withMeasurementSettings(goalKg: Double?, heightCm: Double?): HomeUiState {
+    val startingWeight = items.lastOrNull()?.weight?.weight
+    val current = dailyWeights.lastOrNull()
+    val latestWeight = latest?.weight
+    return copy(
+        bmi = if (heightCm != null && latestWeight != null) calculateBmi(latestWeight, heightCm) else null,
         hasHeight = heightCm != null,
-        goal = if (goalKg != null && latest != null) goalProgress(oldestFirst.first().weight, latest.weight, goalKg) else null,
+        heightCm = heightCm,
+        goal = if (goalKg != null && startingWeight != null && current != null) {
+            goalProgress(startingWeight, current.trendKg, goalKg)
+        } else null,
     )
 }
 

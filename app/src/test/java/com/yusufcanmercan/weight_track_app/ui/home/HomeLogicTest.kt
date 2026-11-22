@@ -10,6 +10,7 @@ import java.util.TimeZone
 
 class HomeLogicTest {
     private val day = 24 * 60 * 60 * 1000L
+    private val utc = TimeZone.getTimeZone("UTC")
     private fun w(id: Long, kg: Double, dayNo: Int) = Weight(id, kg, dayNo * day)
 
     @Test
@@ -18,7 +19,8 @@ class HomeLogicTest {
 
         assertFalse(state.isLoading)
         assertNull(state.latest)
-        assertNull(state.weeklyChange)
+        assertNull(weeklySummary(state.dailyWeights, state.dailyWeights.lastOrNull()?.dayMillis ?: 0L).change)
+        assertTrue(state.dailyWeights.isEmpty())
         assertEquals(emptyList<HomeItem>(), state.items)
     }
 
@@ -40,18 +42,45 @@ class HomeLogicTest {
     }
 
     @Test
-    fun `haftalik degisim en az 7 gun onceki en yeni kayda gore hesaplanir`() {
-        val state = buildHomeState(listOf(w(1, 82.0, 0), w(2, 81.0, 2), w(3, 80.0, 8), w(4, 79.5, 10)))
+    fun `haftalik degisim en az 7 gun onceki en yeni egilime gore hesaplanir`() {
+        val state = buildHomeState(
+            listOf(w(1, 82.0, 0), w(2, 81.0, 2), w(3, 80.0, 8), w(4, 79.5, 10)),
+            timeZone = utc,
+        )
 
-        // Son kayıt 10. gün; 7+ gün önceki en yeni kayıt 2. gün (81.0).
-        assertEquals(-1.5, state.weeklyChange!!, 1e-9)
+        assertEquals(-0.890625, weeklySummary(state.dailyWeights, 10 * day).change!!, 1e-9)
+    }
+
+    @Test
+    fun `egilim ayni gunun son olcumunu kullanir ve bos gunlere nokta eklemez`() {
+        val morning = w(2, 83.0, 4)
+        val last = w(4, 76.0, 4).copy(timeStamp = 4 * day + 1)
+        val sameTime = last.copy(id = 3, weight = 70.0)
+        val state = buildHomeState(listOf(last, morning, w(1, 80.0, 0), sameTime), timeZone = utc)
+
+        assertEquals(4, state.items.size)
+        assertEquals(last, state.latest)
+        assertEquals(listOf(0L, 4 * day), state.dailyWeights.map { it.dayMillis })
+        assertEquals(76.0, state.dailyWeights.last().measuredKg, 1e-9)
+        assertEquals(79.0, state.dailyWeights.last().trendKg, 1e-9)
+    }
+
+    @Test
+    fun `egilim yerel takvim gunune gore gruplar`() {
+        val weights = listOf(Weight(1, 80.0, day - 1), Weight(2, 76.0, day + 1))
+        val istanbul = TimeZone.getTimeZone("Europe/Istanbul")
+
+        assertEquals(2, buildHomeState(weights, timeZone = utc).dailyWeights.size)
+        val localDay = buildHomeState(weights, timeZone = istanbul).dailyWeights.single()
+        assertEquals(day, localDay.dayMillis)
+        assertEquals(76.0, localDay.trendKg, 1e-9)
     }
 
     @Test
     fun `yedi gunluk gecmis yoksa haftalik degisim yoktur`() {
         val state = buildHomeState(listOf(w(1, 80.0, 0), w(2, 79.0, 3)))
 
-        assertNull(state.weeklyChange)
+        assertNull(weeklySummary(state.dailyWeights, state.dailyWeights.lastOrNull()?.dayMillis ?: 0L).change)
     }
 
     @Test
@@ -119,9 +148,10 @@ class HomeLogicTest {
     }
 
     @Test
-    fun `buildHomeState hedefi ilk kayda gore hesaplar`() {
-        val state = buildHomeState(listOf(w(1, 80.0, 1), w(2, 75.0, 2)), goalKg = 70.0)
+    fun `hedef ilerlemesi egilimi BMI son tartiyi kullanir`() {
+        val state = buildHomeState(listOf(w(1, 80.0, 1), w(2, 75.0, 2)), goalKg = 70.0, heightCm = 175.0, timeZone = utc)
 
-        assertEquals(0.5f, state.goal!!.progress, 1e-6f)
+        assertEquals(0.125f, state.goal!!.progress, 1e-6f)
+        assertEquals(calculateBmi(75.0, 175.0), state.bmi)
     }
 }

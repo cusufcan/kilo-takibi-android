@@ -1,6 +1,5 @@
 package com.yusufcanmercan.weight_track_app.ui.home
 
-import com.yusufcanmercan.weight_track_app.data.local.Weight
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -9,7 +8,13 @@ class ChartDataTest {
 
     private val day = 86_400_000L
 
-    private fun w(kg: Double, dayNo: Long) = Weight(weight = kg, timeStamp = 1_000_000L + dayNo * day)
+    private fun w(kg: Double, dayNo: Long) = DailyWeight(dayMillis = dayNo * day, measuredKg = kg, trendKg = kg)
+
+    @Test
+    fun `kilo ekseni gercek koordinatlarda duzgun aralikli etiketler olusturur`() {
+        assertEquals(listOf(80.0, 76.0, 72.0), kilogramTicks(71.0, 83.0))
+        assertEquals(listOf(77.0, 76.0, 75.0), kilogramTicks(75.0, 77.0))
+    }
 
     @Test
     fun `kayit yoksa null doner`() {
@@ -28,7 +33,7 @@ class ChartDataTest {
     fun `girdi sirasi karisik olsa da tarihe gore siralanir`() {
         val data = buildChartData(listOf(w(78.0, 10), w(80.0, 0)))!!
 
-        assertEquals(listOf(80.0, 78.0), data.points.map { it.kg })
+        assertEquals(listOf(80.0, 78.0), data.points.map { it.measuredKg })
     }
 
     @Test
@@ -70,11 +75,22 @@ class ChartDataTest {
         assertNull(d.goalKg)
         assertEquals(77.0, d.minKg, 1e-9)
     }
+
+    @Test
+    fun `grafik araligi secilince onceki olcumlerin egilime etkisi korunur`() {
+        val weights = listOf(w(80.0, 0), DailyWeight(10 * day, measuredKg = 76.0, trendKg = 79.0))
+        val data = buildChartData(filterByRange(weights, ChartRange.WEEK))!!
+
+        assertEquals(76.0, data.points.single().measuredKg, 1e-9)
+        assertEquals(79.0, data.points.single().trendKg, 1e-9)
+        assertEquals(75.0, data.minKg, 1e-9)
+        assertEquals(80.0, data.maxKg, 1e-9)
+    }
 }
 
 class NearestPointTest {
     private val day = 24 * 60 * 60 * 1000L
-    private fun data(vararg days: Int) = buildChartData(days.map { Weight(it.toLong(), 80.0, it * day) })!!
+    private fun data(vararg days: Int) = buildChartData(days.map { DailyWeight(it * day, 80.0, 80.0) })!!
 
     @org.junit.Test
     fun `dokunulan yere gun olarak en yakin nokta secilir`() {
@@ -89,6 +105,14 @@ class NearestPointTest {
         val d = data(0, 5)
         org.junit.Assert.assertEquals(0, nearestPointIndex(d, -1f))
         org.junit.Assert.assertEquals(1, nearestPointIndex(d, 2f))
+    }
+
+    @Test
+    fun `esit uzaklikta veya ayni gunde ilk nokta secilir`() {
+        val d = data(0, 4, 4, 8)
+        assertEquals(0, nearestPointIndex(d, 0.25f))
+        assertEquals(1, nearestPointIndex(d, 0.5f))
+        assertEquals(1, nearestPointIndex(d, 0.75f))
     }
 
     @org.junit.Test

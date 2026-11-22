@@ -1,17 +1,15 @@
 package com.yusufcanmercan.weight_track_app.ui.home
 
-import com.yusufcanmercan.weight_track_app.data.local.Weight
-
 /** Grafik aralığı; [days] `null` ise tüm kayıtlar. */
 enum class ChartRange(val days: Int?) { WEEK(7), MONTH(30), QUARTER(90), ALL(null) }
 
 /**
  * Seçili aralığa düşen kayıtlar. Aralık bugünden değil SON KAYITTAN geriye sayılır:
- * bir süre kayıt girilmese de "7G" boş kalmaz, son haftanın verisini gösterir. Sınır dahildir.
+ * bir süre kayıt girilmese de son haftanın verisini gösterir. Son kayıt günü aralığın içindedir.
  */
-fun filterByRange(weights: List<Weight>, range: ChartRange): List<Weight> {
+fun filterByRange(weights: List<DailyWeight>, range: ChartRange): List<DailyWeight> {
     val days = range.days ?: return weights
-    val latest = weights.maxOfOrNull { it.timeStamp } ?: return weights
-    val from = latest - days * DAY_MS.toLong()
-    return weights.filter { it.timeStamp >= from }
+    val latest = weights.maxOfOrNull { it.dayMillis } ?: return weights
+    val from = latest - (days - 1) * DAY_MILLIS
+    return weights.filter { it.dayMillis >= from }
 }
