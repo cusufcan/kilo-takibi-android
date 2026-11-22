@@ -20,6 +20,11 @@ interface WeightRepository {
 
     suspend fun addFirst(weight: Weight)
 
+    /** Hepsini tek işlemde ekler; yeni id'leri döndürür. */
+    suspend fun addAll(weights: List<Weight>): List<Long>
+
+    suspend fun deleteAll(ids: List<Long>)
+
     suspend fun update(weight: Weight)
 
     suspend fun delete(weight: Weight)

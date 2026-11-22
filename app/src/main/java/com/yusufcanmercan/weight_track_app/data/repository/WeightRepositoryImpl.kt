@@ -20,6 +20,10 @@ class WeightRepositoryImpl @Inject constructor(
 
     override suspend fun addFirst(weight: Weight) = dao.insertFirst(weight)
 
+    override suspend fun addAll(weights: List<Weight>): List<Long> = dao.insertAll(weights)
+
+    override suspend fun deleteAll(ids: List<Long>) = dao.deleteAll(ids)
+
     override suspend fun update(weight: Weight) = dao.update(weight)
 
     override suspend fun delete(weight: Weight) = dao.delete(weight)

@@ -208,4 +208,32 @@
     <string name="reminder_channel">Daily reminder</string>
     <string name="notifications_blocked">Notifications are turned off for this app, so reminders won’t arrive.</string>
     <string name="notifications_open_settings">Open notification settings</string>
+    <string name="settings_import_csv">Import CSV</string>
+    <string name="settings_import_hint">Add weigh-ins from this app\'s export or a simple date,weight file.</string>
+    <string name="import_preview_title">Import weigh-ins</string>
+    <plurals name="import_preview_new">
+        <item quantity="one">%d new weigh-in will be added.</item>
+        <item quantity="other">%d new weigh-ins will be added.</item>
+    </plurals>
+    <string name="import_preview_range">From %1$s to %2$s</string>
+    <plurals name="import_preview_duplicates">
+        <item quantity="one">%d is already in the app and will be skipped.</item>
+        <item quantity="other">%d are already in the app and will be skipped.</item>
+    </plurals>
+    <plurals name="import_preview_bad">
+        <item quantity="one">%1$d row could not be read (line %2$s).</item>
+        <item quantity="other">%1$d rows could not be read (lines %2$s).</item>
+    </plurals>
+    <string name="import_preview_nothing">No new weigh-ins in this file.</string>
+    <string name="import_confirm">Import</string>
+    <string name="import_running">Importing…</string>
+    <plurals name="import_done">
+        <item quantity="one">%d weigh-in imported.</item>
+        <item quantity="other">%d weigh-ins imported.</item>
+    </plurals>
+    <string name="import_undo">Undo</string>
+    <string name="import_undone">Import undone.</string>
+    <string name="import_too_large">The file is larger than 5 MB.</string>
+    <string name="import_error">Could not read the file.</string>
+    <string name="import_write_error">Could not save the weigh-ins. Try again.</string>
 </resources>

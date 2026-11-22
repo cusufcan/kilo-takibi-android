@@ -9,8 +9,10 @@ import com.yusufcanmercan.weight_track_app.platform.FakeReminderScheduler
 import com.yusufcanmercan.weight_track_app.ui.home.MainDispatcherRule
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -169,5 +171,41 @@ class SettingsViewModelTest {
 
         assertEquals(DailyReminder(enabled = true, minuteOfDay = 21 * 60 + 30), viewModel.uiState.value.reminder)
         assertEquals(2, scheduler.syncCount)
+    }
+
+    @Test
+    fun `csv onizlenir onaylaninca eklenir geri alininca silinir`() = runTest {
+        val weights = FakeWeightRepository()
+        val viewModel = SettingsViewModel(FakeSettingsRepository(), weights, FakeReminderScheduler())
+        val csv = "date,weight_kg\n2026-11-20,80\n2026-11-21,79.5\nbozuk,1\n"
+
+        viewModel.readCsv({ csv.byteInputStream() }, now = Long.MAX_VALUE)
+        // Dosya gerçek IO iş parçacığında okunur; sanal zaman yerine durumu bekle.
+        val preview = viewModel.csvImport.first { it != CsvImportState.Reading } as CsvImportState.Preview
+        assertEquals(2, preview.plan.added.size)
+        assertEquals(listOf(4), preview.plan.badLines)
+        assertTrue(weights.observeAll().first().isEmpty())
+
+        viewModel.confirmImport()
+        advanceUntilIdle()
+        assertTrue(viewModel.csvImport.value is CsvImportState.Done)
+        assertEquals(2, weights.observeAll().first().size)
+
+        viewModel.undoImport()
+        advanceUntilIdle()
+        assertEquals(CsvImportState.Undone, viewModel.csvImport.value)
+        assertTrue(weights.observeAll().first().isEmpty())
+    }
+
+    @Test
+    fun `cok buyuk dosya reddedilir`() = runTest {
+        val viewModel = SettingsViewModel(FakeSettingsRepository(), FakeWeightRepository(), FakeReminderScheduler())
+
+        viewModel.readCsv({ ByteArray(5 * 1024 * 1024 + 1).inputStream() })
+
+        assertEquals(
+            CsvImportState.Failed(CsvImportError.TOO_LARGE),
+            viewModel.csvImport.first { it != CsvImportState.Reading },
+        )
     }
 }

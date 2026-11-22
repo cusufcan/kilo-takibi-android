@@ -204,4 +204,32 @@
     <string name="reminder_channel">Günlük hatırlatıcı</string>
     <string name="notifications_blocked">Bu uygulamanın bildirimleri kapalı, hatırlatıcılar gelmeyecek.</string>
     <string name="notifications_open_settings">Bildirim ayarlarını aç</string>
+    <string name="settings_import_csv">CSV içe aktar</string>
+    <string name="settings_import_hint">Bu uygulamanın dışa aktardığı dosyadan ya da basit tarih,kilo dosyasından ölçüm ekle.</string>
+    <string name="import_preview_title">Ölçümleri içe aktar</string>
+    <plurals name="import_preview_new">
+        <item quantity="one">%d yeni ölçüm eklenecek.</item>
+        <item quantity="other">%d yeni ölçüm eklenecek.</item>
+    </plurals>
+    <string name="import_preview_range">%1$s – %2$s</string>
+    <plurals name="import_preview_duplicates">
+        <item quantity="one">%d ölçüm zaten var, atlanacak.</item>
+        <item quantity="other">%d ölçüm zaten var, atlanacak.</item>
+    </plurals>
+    <plurals name="import_preview_bad">
+        <item quantity="one">%1$d satır okunamadı (satır %2$s).</item>
+        <item quantity="other">%1$d satır okunamadı (satırlar %2$s).</item>
+    </plurals>
+    <string name="import_preview_nothing">Bu dosyada yeni ölçüm yok.</string>
+    <string name="import_confirm">İçe aktar</string>
+    <string name="import_running">İçe aktarılıyor…</string>
+    <plurals name="import_done">
+        <item quantity="one">%d ölçüm içe aktarıldı.</item>
+        <item quantity="other">%d ölçüm içe aktarıldı.</item>
+    </plurals>
+    <string name="import_undo">Geri al</string>
+    <string name="import_undone">İçe aktarma geri alındı.</string>
+    <string name="import_too_large">Dosya 5 MB\'tan büyük.</string>
+    <string name="import_error">Dosya okunamadı.</string>
+    <string name="import_write_error">Ölçümler kaydedilemedi. Tekrar dene.</string>
 </resources>

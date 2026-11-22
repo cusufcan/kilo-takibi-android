@@ -30,6 +30,19 @@ interface WeightDao {
         if (!hasMeasurements()) insert(weight)
     }
 
+    /** Hepsi tek işlemde eklenir; biri bile yazılamazsa hiçbiri yazılmaz. */
+    @Insert
+    suspend fun insertAll(weights: List<Weight>): List<Long>
+
+    @Query("DELETE FROM Weight WHERE id IN (:ids)")
+    suspend fun deleteIds(ids: List<Long>)
+
+    /** SQLite tek sorguda sınırlı sayıda parametre alır; uzun listeyi parçalar halinde siler. */
+    @Transaction
+    suspend fun deleteAll(ids: List<Long>) {
+        ids.chunked(500).forEach { deleteIds(it) }
+    }
+
     @Update
     suspend fun update(weight: Weight)
 

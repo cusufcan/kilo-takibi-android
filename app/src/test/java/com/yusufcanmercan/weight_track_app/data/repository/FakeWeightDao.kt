@@ -24,6 +24,12 @@ class FakeWeightDao : WeightDao {
         return saved.id
     }
 
+    override suspend fun insertAll(weights: List<Weight>): List<Long> = weights.map { insert(it) }
+
+    override suspend fun deleteIds(ids: List<Long>) {
+        rows.value = rows.value.filterNot { it.id in ids }
+    }
+
     override suspend fun update(weight: Weight) {
         rows.value = rows.value.map { if (it.id == weight.id) weight else it }
     }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -52,13 +54,17 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yusufcanmercan.weight_track_app.R
+import com.yusufcanmercan.weight_track_app.data.export.CsvImportPlan
 import com.yusufcanmercan.weight_track_app.data.settings.DailyReminder
 import com.yusufcanmercan.weight_track_app.data.settings.ThemeMode
+import com.yusufcanmercan.weight_track_app.platform.SeyirWidget
 import com.yusufcanmercan.weight_track_app.ui.home.ScreenTitle
 import com.yusufcanmercan.weight_track_app.ui.theme.SeyirIcon
 import com.yusufcanmercan.weight_track_app.ui.theme.Spacing
+import java.text.DateFormat
 import java.text.DecimalFormatSymbols
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 @Composable
@@ -146,8 +152,121 @@ private fun CsvExportSection(viewModel: SettingsViewModel, hasMeasurements: Bool
                     else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            HorizontalDivider()
+            CsvImportControls(viewModel)
         }
     }
+}
+
+private val CsvMimeTypes = arrayOf("text/*", "application/csv", "application/vnd.ms-excel", "application/octet-stream")
+
+@Composable
+private fun CsvImportControls(viewModel: SettingsViewModel) {
+    val context = LocalContext.current
+    val resolver = context.applicationContext.contentResolver
+    val state by viewModel.csvImport.collectAsStateWithLifecycle()
+    var pickerUnavailable by rememberSaveable { mutableStateOf(false) }
+    val openDocument = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) viewModel.readCsv({ resolver.openInputStream(uri) })
+    }
+    LaunchedEffect(state) {
+        if (state is CsvImportState.Done || state == CsvImportState.Undone) SeyirWidget.refresh(context)
+    }
+    val busy = state == CsvImportState.Reading || state == CsvImportState.Writing
+
+    Text(
+        stringResource(R.string.settings_import_hint),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    OutlinedButton(
+        enabled = !busy,
+        onClick = {
+            pickerUnavailable = false
+            viewModel.clearImportStatus()
+            try {
+                openDocument.launch(CsvMimeTypes)
+            } catch (_: ActivityNotFoundException) {
+                pickerUnavailable = true
+            }
+        },
+    ) {
+        Text(stringResource(R.string.settings_import_csv))
+    }
+
+    val current = state
+    val message: String? = when {
+        pickerUnavailable -> stringResource(R.string.import_error)
+        current is CsvImportState.Failed -> stringResource(
+            when (current.error) {
+                CsvImportError.TOO_LARGE -> R.string.import_too_large
+                CsvImportError.UNREADABLE -> R.string.import_error
+                CsvImportError.WRITE -> R.string.import_write_error
+            },
+        )
+        busy -> stringResource(R.string.import_running)
+        current is CsvImportState.Done -> pluralStringResource(R.plurals.import_done, current.ids.size, current.ids.size)
+        current == CsvImportState.Undone -> stringResource(R.string.import_undone)
+        else -> null
+    }
+    if (message != null) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                message,
+                modifier = Modifier.weight(1f).semantics { liveRegion = LiveRegionMode.Polite },
+                style = MaterialTheme.typography.bodySmall,
+                color = if (pickerUnavailable || current is CsvImportState.Failed) MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (current is CsvImportState.Done) {
+                TextButton(onClick = viewModel::undoImport) { Text(stringResource(R.string.import_undo)) }
+            }
+        }
+    }
+    if (current is CsvImportState.Preview) {
+        CsvImportPreviewDialog(current.plan, onConfirm = viewModel::confirmImport, onDismiss = viewModel::cancelImport)
+    }
+}
+
+@Composable
+private fun CsvImportPreviewDialog(plan: CsvImportPlan, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    val locale = LocalLocale.current.platformLocale
+    val dateFormat = remember(locale) { DateFormat.getDateInstance(DateFormat.MEDIUM, locale) }
+    val count = plan.added.size
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.import_preview_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                if (count == 0) {
+                    Text(stringResource(R.string.import_preview_nothing))
+                } else {
+                    Text(pluralStringResource(R.plurals.import_preview_new, count, count))
+                    val first = plan.added.minOf { it.timeStamp }
+                    val last = plan.added.maxOf { it.timeStamp }
+                    Text(
+                        stringResource(R.string.import_preview_range, dateFormat.format(Date(first)), dateFormat.format(Date(last))),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (plan.duplicates > 0) {
+                    Text(pluralStringResource(R.plurals.import_preview_duplicates, plan.duplicates, plan.duplicates))
+                }
+                if (plan.badLines.isNotEmpty()) {
+                    val lines = plan.badLines.take(5).joinToString(", ") + if (plan.badLines.size > 5) "…" else ""
+                    Text(
+                        pluralStringResource(R.plurals.import_preview_bad, plan.badLines.size, plan.badLines.size, lines),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm, enabled = count > 0) { Text(stringResource(R.string.import_confirm)) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+    )
 }
 
 @Composable

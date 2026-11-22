@@ -19,6 +19,12 @@ class FakeWeightRepository(initial: List<Weight> = emptyList()) : WeightReposito
         return id
     }
 
+    override suspend fun addAll(weights: List<Weight>): List<Long> = weights.map { add(it) }
+
+    override suspend fun deleteAll(ids: List<Long>) {
+        rows.value = rows.value.filterNot { it.id in ids }
+    }
+
     override suspend fun hasMeasurements(): Boolean = rows.value.isNotEmpty()
 
     override suspend fun addFirst(weight: Weight) {
