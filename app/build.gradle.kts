@@ -25,7 +25,7 @@ android {
         // Play'deki 2.3.0 = 23; yeni sürüm bundan büyük olmalı (ADR-0007). Her Play yüklemesinde artar.
         versionCode = 24
         versionName = "3.0.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.yusufcanmercan.weight_track_app.HiltTestRunner"
     }
 
     buildTypes {
@@ -80,4 +80,9 @@ dependencies {
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

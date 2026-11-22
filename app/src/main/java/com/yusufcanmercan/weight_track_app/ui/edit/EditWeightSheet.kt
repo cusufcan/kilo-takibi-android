@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -276,7 +277,7 @@ private fun EntryWeight(
             BasicTextField(
                 value = weightText,
                 onValueChange = onChange,
-                modifier = Modifier.width(editorWidth).alignByBaseline().semantics {
+                modifier = Modifier.width(editorWidth).alignByBaseline().testTag(WEIGHT_INPUT_TAG).semantics {
                     if (errorMessage != null) error(errorMessage)
                 },
                 enabled = enabled,
@@ -598,3 +599,6 @@ internal fun WeightRuler(value: Double, enabled: Boolean, onChange: (Double) -> 
         drawCircle(colors.secondary, radius = 4.dp.toPx(), center = Offset(center.x, 8.dp.toPx()))
     }
 }
+
+/** UI testlerinin kilo alanını bulduğu etiket; alanın görünür bir başlığı yok. */
+internal const val WEIGHT_INPUT_TAG = "weight_input"

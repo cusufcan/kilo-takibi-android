@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
         var firstContentReady = false
-        splash.setKeepOnScreenCondition { !firstContentReady }
+        if (holdSplashUntilReady) splash.setKeepOnScreenCondition { !firstContentReady }
         if (savedInstanceState == null) appLaunch = launchRequest(intent)
         enableEdgeToEdge()
         setContent {
@@ -95,6 +95,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
+        /**
+         * Açılış ekranı ilk içerik hazır olana dek tutulur. Enstrümanlı testler bunu kapatır: tutma sırasında
+         * her kare iptal edilip yeniden istendiği için Espresso ana iş parçacığını hiç boşta görmez ve takılır.
+         */
+        @Volatile
+        internal var holdSplashUntilReady = true
+
         private const val QUICK_ENTRY = "com.yusufcanmercan.weight_track_app.QUICK_ENTRY"
         private const val OPEN_WEEKLY = "com.yusufcanmercan.weight_track_app.OPEN_WEEKLY"
         private const val THROUGH_DAY = "through_day"
