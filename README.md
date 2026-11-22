@@ -2,6 +2,8 @@
 
 A simple, private weight tracker for Android. Log daily weigh-ins, see your trend on a date-based chart and keep notes, all stored on your device.
 
+[![Get it on Google Play](https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg)](https://play.google.com/store/apps/details?id=com.yusufcanmercan.weight_track_app)
+
 ## Features
 
 - Daily weigh-ins with optional notes, edit and delete
@@ -11,6 +13,11 @@ A simple, private weight tracker for Android. Log daily weigh-ins, see your tren
 - Home screen widget
 - CSV export and import
 - English and Turkish, light and dark theme
+
+## Screenshots
+
+![Kilo Takibi in light theme](docs/images/screens-light.png)
+![Kilo Takibi in dark theme](docs/images/screens-dark.png)
 
 ## Stack
 
@@ -35,3 +42,14 @@ Requirements: JDK 17 and the Android SDK (min SDK 25, target SDK 37).
 ## Credits
 
 Built in collaboration with AI coding agents such as Claude and Codex.
+
+## License
+
+Copyright © 2026 Yusuf Can Mercan. All rights reserved.
+
+The source code is published for viewing only. Copying, modifying, redistributing or using it for commercial purposes requires written permission. See [LICENSE](LICENSE).
+
+## Contact
+
+- LinkedIn: [linkedin.com/in/cusufcan](https://linkedin.com/in/cusufcan)
+- Email: [yusufcanmercan.info@gmail.com](mailto:yusufcanmercan.info@gmail.com)
