@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ yedek ve cihazdan cihaza aktarım kuralları. Hesap olmadığı için kullanıcının tek
+  güvencesi bu yedek: tartı veritabanı, ayarlar (DataStore) ve bildirim tercihi yedeğe girer.
+  Önbellek (paylaşım görseli) zaten girmez. Giriş eklenince oturum dosyaları buradan çıkarılır.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="database" path="." />
+        <include domain="file" path="datastore/" />
+        <include domain="sharedpref" path="weekly_notification.xml" />
+        <include domain="file" path="androidx.appcompat.app.AppCompatDelegate.application_locales_record_file" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="database" path="." />
+        <include domain="file" path="datastore/" />
+        <include domain="sharedpref" path="weekly_notification.xml" />
+        <include domain="file" path="androidx.appcompat.app.AppCompatDelegate.application_locales_record_file" />
+    </device-transfer>
+</data-extraction-rules>
