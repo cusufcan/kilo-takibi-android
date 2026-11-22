@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Launcher ikonu temadan bağımsız. -->
-    <color name="ic_launcher_background">#6200EE</color>
     <color name="seyir_splash_background">#FCF8FF</color>
     <color name="seyir_splash_badge">#EDDCFF</color>
-    <color name="seyir_splash_mark">#6200EE</color>
+    <color name="seyir_splash_mark">#4A1FB0</color>
 </resources>
