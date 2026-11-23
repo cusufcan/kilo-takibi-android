@@ -6,13 +6,16 @@ A simple, private weight tracker for Android. Log daily weigh-ins, see your tren
 
 ## Features
 
-- Daily weigh-ins with optional notes, edit and delete
+- Daily weigh-ins with optional mood and notes, edit and delete
 - Smoothed weight trend and date-based progress chart
-- Goal weight and BMI
-- Weekly summary and a daily reminder at a time you choose
+- Goal weight with an estimated arrival date, BMI and milestones
+- Calendar and full history
+- Weekly summary you can share, and a daily reminder at a time you choose
 - Home screen widget
 - CSV export and import
 - English and Turkish, light and dark theme
+
+No account, ads or analytics, and no internet permission; see the [privacy policy](https://cusufcan.github.io/kilo-takibi/privacy.html).
 
 ## Screenshots
 
