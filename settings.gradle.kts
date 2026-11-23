@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "kilo-takibi"
+rootProject.name = "kilo-takibi-android"
 include(":app")
