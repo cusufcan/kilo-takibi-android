@@ -19,8 +19,8 @@ No account, ads or analytics, and no internet permission; see the [privacy polic
 
 ## Screenshots
 
-![Kilo Takibi in light theme](docs/images/screens-light.png)
-![Kilo Takibi in dark theme](docs/images/screens-dark.png)
+![Kilo Takibi in light theme](.github/images/screens-light.png)
+![Kilo Takibi in dark theme](.github/images/screens-dark.png)
 
 ## Stack
 
